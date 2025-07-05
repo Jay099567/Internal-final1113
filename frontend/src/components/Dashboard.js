@@ -1,0 +1,334 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { 
+  Users, 
+  FileText, 
+  Briefcase, 
+  TrendingUp,
+  Activity,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  Plus
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
+
+const StatCard = ({ title, value, icon: Icon, trend, color = "blue" }) => {
+  const colorClasses = {
+    blue: "bg-blue-500",
+    green: "bg-green-500",
+    yellow: "bg-yellow-500",
+    purple: "bg-purple-500"
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-3xl font-bold text-gray-900">{value}</p>
+          {trend && (
+            <p className="text-sm text-green-600 font-medium">
+              <TrendingUp className="w-4 h-4 inline mr-1" />
+              {trend}
+            </p>
+          )}
+        </div>
+        <div className={`${colorClasses[color]} p-3 rounded-lg`}>
+          <Icon className="w-6 h-6 text-white" />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ActivityItem = ({ type, title, time, status }) => {
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'success':
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case 'pending':
+        return <Clock className="w-4 h-4 text-yellow-500" />;
+      case 'error':
+        return <AlertCircle className="w-4 h-4 text-red-500" />;
+      default:
+        return <Activity className="w-4 h-4 text-gray-500" />;
+    }
+  };
+
+  return (
+    <div className="flex items-center space-x-3 p-3 hover:bg-gray-50 rounded-lg">
+      {getStatusIcon()}
+      <div className="flex-1">
+        <p className="text-sm font-medium text-gray-900">{title}</p>
+        <p className="text-xs text-gray-500">{time}</p>
+      </div>
+    </div>
+  );
+};
+
+const Dashboard = () => {
+  const [stats, setStats] = useState({
+    counts: {
+      candidates: 0,
+      resumes: 0,
+      applications: 0,
+      jobs: 0
+    },
+    recent_activity: {
+      candidates: [],
+      applications: []
+    }
+  });
+  const [loading, setLoading] = useState(true);
+  const [systemStatus, setSystemStatus] = useState(null);
+
+  useEffect(() => {
+    fetchDashboardData();
+    checkSystemHealth();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const response = await axios.get(`${API}/dashboard/stats`);
+      setStats(response.data);
+    } catch (error) {
+      console.error("Failed to fetch dashboard stats:", error);
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkSystemHealth = async () => {
+    try {
+      const response = await axios.get(`${API}/health`);
+      setSystemStatus(response.data);
+    } catch (error) {
+      console.error("System health check failed:", error);
+      setSystemStatus({ status: "unhealthy" });
+    }
+  };
+
+  const formatTime = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Elite JobHunter X Dashboard
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Autonomous job application automation platform
+          </p>
+        </div>
+        <Link
+          to="/candidates/new"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2 transition-colors"
+        >
+          <Plus className="w-5 h-5" />
+          <span>Add Candidate</span>
+        </Link>
+      </div>
+
+      {/* System Status */}
+      {systemStatus && (
+        <div className={`p-4 rounded-lg ${
+          systemStatus.status === 'healthy' 
+            ? 'bg-green-50 border border-green-200' 
+            : 'bg-red-50 border border-red-200'
+        }`}>
+          <div className="flex items-center space-x-2">
+            <div className={`w-3 h-3 rounded-full ${
+              systemStatus.status === 'healthy' ? 'bg-green-500' : 'bg-red-500'
+            }`}></div>
+            <span className="font-medium">
+              System Status: {systemStatus.status === 'healthy' ? 'Operational' : 'Issues Detected'}
+            </span>
+          </div>
+          <div className="mt-2 text-sm text-gray-600">
+            Database: {systemStatus.database} | AI: {systemStatus.openrouter}
+          </div>
+        </div>
+      )}
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title="Active Candidates"
+          value={stats.counts.candidates}
+          icon={Users}
+          trend="+12% this week"
+          color="blue"
+        />
+        <StatCard
+          title="Resumes Processed"
+          value={stats.counts.resumes}
+          icon={FileText}
+          trend="+8 new this week"
+          color="green"
+        />
+        <StatCard
+          title="Applications Sent"
+          value={stats.counts.applications}
+          icon={Briefcase}
+          trend="+0 this week"
+          color="purple"
+        />
+        <StatCard
+          title="Jobs Scraped"
+          value={stats.counts.jobs}
+          icon={TrendingUp}
+          trend="+0 this week"
+          color="yellow"
+        />
+      </div>
+
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Recent Candidates */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900">Recent Candidates</h2>
+            <p className="text-sm text-gray-600 mt-1">Newly onboarded candidates</p>
+          </div>
+          <div className="p-6">
+            {stats.recent_activity.candidates.length > 0 ? (
+              <div className="space-y-4">
+                {stats.recent_activity.candidates.map((candidate) => (
+                  <Link
+                    key={candidate.id}
+                    to={`/candidates/${candidate.id}`}
+                    className="flex items-center space-x-4 p-4 hover:bg-gray-50 rounded-lg transition-colors"
+                  >
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <Users className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-gray-900">{candidate.full_name}</p>
+                      <p className="text-sm text-gray-500">{candidate.email}</p>
+                      <p className="text-xs text-gray-400">
+                        Added {formatTime(candidate.created_at)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Active
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No candidates added yet</p>
+                <Link
+                  to="/candidates/new"
+                  className="text-blue-600 hover:text-blue-700 font-medium mt-2 inline-block"
+                >
+                  Add your first candidate
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* System Activity */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="p-6 border-b border-gray-200">
+            <h2 className="text-xl font-semibold text-gray-900">System Activity</h2>
+            <p className="text-sm text-gray-600 mt-1">Recent system events</p>
+          </div>
+          <div className="p-6">
+            <div className="space-y-2">
+              <ActivityItem
+                type="system"
+                title="AI Services Initialized"
+                time="2 minutes ago"
+                status="success"
+              />
+              <ActivityItem
+                type="system"
+                title="Database Connection Established"
+                time="5 minutes ago"
+                status="success"
+              />
+              <ActivityItem
+                type="feature"
+                title="Gmail OAuth Ready"
+                time="10 minutes ago"
+                status="success"
+              />
+              <ActivityItem
+                type="feature"
+                title="Resume Parser Active"
+                time="15 minutes ago"
+                status="success"
+              />
+              <ActivityItem
+                type="system"
+                title="Phase 1 Implementation Complete"
+                time="1 hour ago"
+                status="success"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Link
+            to="/candidates/new"
+            className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+          >
+            <Plus className="w-8 h-8 text-blue-600 mb-2" />
+            <h3 className="font-medium text-gray-900">Add Candidate</h3>
+            <p className="text-sm text-gray-600">Onboard a new job seeker</p>
+          </Link>
+          
+          <Link
+            to="/test-ai"
+            className="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:bg-purple-50 transition-colors"
+          >
+            <Activity className="w-8 h-8 text-purple-600 mb-2" />
+            <h3 className="font-medium text-gray-900">Test AI Features</h3>
+            <p className="text-sm text-gray-600">Test job matching and AI tools</p>
+          </Link>
+          
+          <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 opacity-60">
+            <Briefcase className="w-8 h-8 text-gray-400 mb-2" />
+            <h3 className="font-medium text-gray-500">Job Scraping</h3>
+            <p className="text-sm text-gray-400">Coming in Phase 2</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
