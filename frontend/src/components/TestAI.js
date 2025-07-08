@@ -295,7 +295,7 @@ We offer competitive salary, equity, and comprehensive benefits.`;
           title="System Health Check"
           description="Test system connectivity and AI service status"
           icon={Brain}
-          onTest={testSystemHealth}
+          onTest={checkSystemHealth}
           loading={loading.health}
           result={results.health}
           error={errors.health}
