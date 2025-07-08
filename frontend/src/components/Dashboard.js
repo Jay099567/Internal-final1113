@@ -222,10 +222,10 @@ const Dashboard = () => {
           color="purple"
         />
         <StatCard
-          title="Jobs Scraped"
-          value={stats.jobs}
+          title="Job Matches"
+          value={stats.counts?.job_matches || 0}
           icon={TrendingUp}
-          trend="+0 this week"
+          trend="+New matches found"
           color="yellow"
         />
       </div>
