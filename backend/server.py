@@ -50,6 +50,7 @@ async def health_check():
         await db.command("ping")
         
         # Check OpenRouter API
+        openrouter_service = get_openrouter_service()
         openrouter_status = "operational" if openrouter_service.api_key else "missing_api_key"
         
         return {
