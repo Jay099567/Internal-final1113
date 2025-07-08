@@ -460,12 +460,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Job scraping infrastructure testing"
-    - "Indeed scraper functionality"
-    - "APScheduler automation testing"
-    - "Scraping API endpoints"
-    - "Frontend scraping components"
-    - "Dashboard scraping integration"
+    - "AI Job Matching Service testing"
+    - "Job matching API endpoints"
+    - "Vector embeddings functionality"
+    - "Frontend job matching interface"
+    - "Dashboard integration testing"
+    - "End-to-end matching workflow"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
