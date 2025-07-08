@@ -200,7 +200,7 @@ const Dashboard = () => {
         />
         <StatCard
           title="Applications Sent"
-          value={stats.counts.applications}
+          value={stats.applications.total}
           icon={Briefcase}
           trend="+0 this week"
           color="purple"
