@@ -90,7 +90,14 @@ const Navigation = () => {
               >
                 <Icon className="w-5 h-5" />
                 <div className="flex-1">
-                  <div className="font-medium">{item.title}</div>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-medium">{item.title}</span>
+                    {item.badge && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                        {item.badge}
+                      </span>
+                    )}
+                  </div>
                   <div className="text-xs opacity-70">{item.description}</div>
                 </div>
               </Link>
