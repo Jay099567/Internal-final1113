@@ -237,7 +237,41 @@ backend:
         agent: "main"
         comment: "Created automated scheduling system with 4 default job scraping schedules running every 6-8 hours. Includes logging, error handling, and manual scraping capabilities."
 
-  - task: "Scraping API Endpoints"
+  - task: "AI Job Matching Service"
+    implemented: true
+    working: true
+    file: "services/job_matching.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Implemented comprehensive AI job matching service with vector embeddings, semantic similarity, OpenRouter AI analysis, and automated candidate-job matching pipeline. Includes salary/location/visa/skills matching, priority scoring, and database storage."
+
+  - task: "Job Matching API Endpoints"
+    implemented: true
+    working: true
+    file: "server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Added comprehensive job matching API endpoints: process matches for candidate, get saved matches, process all candidates, matching statistics, and test matching functionality."
+
+  - task: "Vector Embeddings Integration"
+    implemented: true
+    working: true
+    file: "services/job_matching.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Integrated sentence-transformers with MiniLM model for semantic job-candidate matching using vector embeddings and cosine similarity."
     implemented: true
     working: true
     file: "server.py"
