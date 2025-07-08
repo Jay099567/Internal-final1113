@@ -355,6 +355,7 @@ async def test_cover_letter_generation(
         
         # Test cover letter generation
         company_info = {"name": company_name}
+        openrouter_service = get_openrouter_service()
         cover_letter = await openrouter_service.generate_cover_letter(
             job_description, candidate, company_info, tone
         )
