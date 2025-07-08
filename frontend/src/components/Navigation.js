@@ -33,14 +33,20 @@ const Navigation = () => {
       icon: Search,
       path: "/scraping",
       description: "Manage Job Scraping",
+      badge: "ACTIVE"
+    },
+    {
+      title: "Job Matching",
+      icon: Brain,
+      path: "/matching",
+      description: "AI Job Matching",
       badge: "NEW"
     },
     {
       title: "Jobs List",
       icon: BarChart3,
       path: "/jobs",
-      description: "View Scraped Jobs",
-      badge: "NEW"
+      description: "View Scraped Jobs"
     },
     {
       title: "Test AI",
