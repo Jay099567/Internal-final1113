@@ -323,6 +323,58 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Job Matching Statistics */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">AI Job Matching Status</h2>
+              <p className="text-sm text-gray-600 mt-1">Advanced job-candidate matching system</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <span className="text-sm font-medium text-gray-700">AI System Active</span>
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{stats.matching_stats?.total_matches || 0}</div>
+              <div className="text-sm text-gray-600">Total Matches</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-red-600">{stats.matching_stats?.high_priority_matches || 0}</div>
+              <div className="text-sm text-gray-600">High Priority</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{stats.matching_stats?.should_apply_matches || 0}</div>
+              <div className="text-sm text-gray-600">Should Apply</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">{stats.matching_stats?.average_match_score || 0}%</div>
+              <div className="text-sm text-gray-600">Avg Match Score</div>
+            </div>
+          </div>
+          <div className="mt-6 flex space-x-4">
+            <Link
+              to="/matching"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+            >
+              <Activity className="w-4 h-4 mr-2" />
+              View Matches
+            </Link>
+            <Link
+              to="/matching"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              Process Matches
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Job Scraping Statistics */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="p-6 border-b border-gray-200">
