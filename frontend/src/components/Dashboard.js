@@ -73,11 +73,20 @@ const ActivityItem = ({ type, title, time, status }) => {
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
-    counts: {
-      candidates: 0,
-      resumes: 0,
-      applications: 0,
-      jobs: 0
+    total_candidates: 0,
+    total_resumes: 0,
+    applications: {
+      total: 0,
+      pending: 0,
+      successful: 0
+    },
+    jobs: 0,
+    scraping: {
+      total_jobs_scraped: 0,
+      jobs_scraped_24h: 0,
+      scheduled_jobs: 0,
+      success_rate: 0,
+      is_running: false
     },
     recent_activity: {
       candidates: [],
