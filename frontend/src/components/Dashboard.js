@@ -193,7 +193,7 @@ const Dashboard = () => {
         />
         <StatCard
           title="Resumes Processed"
-          value={stats.counts.resumes}
+          value={stats.total_resumes}
           icon={FileText}
           trend="+8 new this week"
           color="green"
