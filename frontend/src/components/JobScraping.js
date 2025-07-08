@@ -153,7 +153,7 @@ const JobScraping = () => {
               disabled={loading}
               className="inline-flex items-center px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
             >
-              <RefreshIcon className="h-4 w-4 mr-2" />
+              <ArrowPathIcon className="h-4 w-4 mr-2" />
               Restart Scheduler
             </button>
           </div>
