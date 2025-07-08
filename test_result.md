@@ -380,11 +380,12 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Backend API endpoints functionality"
-    - "Frontend component integration"
-    - "AI service integration testing"
-    - "Resume upload and parsing"
-    - "Candidate onboarding flow"
+    - "Job scraping infrastructure testing"
+    - "Indeed scraper functionality"
+    - "APScheduler automation testing"
+    - "Scraping API endpoints"
+    - "Frontend scraping components"
+    - "Dashboard scraping integration"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
