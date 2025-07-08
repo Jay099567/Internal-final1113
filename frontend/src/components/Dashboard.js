@@ -323,6 +323,60 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Job Scraping Statistics */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">Job Scraping Status</h2>
+              <p className="text-sm text-gray-600 mt-1">Automated job discovery and collection</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className={`w-3 h-3 rounded-full ${stats.scraping.is_running ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-sm font-medium text-gray-700">
+                {stats.scraping.is_running ? 'Running' : 'Stopped'}
+              </span>
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{stats.scraping.total_jobs_scraped}</div>
+              <div className="text-sm text-gray-600">Total Jobs Scraped</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{stats.scraping.jobs_scraped_24h}</div>
+              <div className="text-sm text-gray-600">Jobs Today</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">{stats.scraping.scheduled_jobs}</div>
+              <div className="text-sm text-gray-600">Active Scrapers</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">{stats.scraping.success_rate.toFixed(1)}%</div>
+              <div className="text-sm text-gray-600">Success Rate</div>
+            </div>
+          </div>
+          <div className="mt-6 flex space-x-4">
+            <Link
+              to="/scraping"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+            >
+              <Activity className="w-4 h-4 mr-2" />
+              Manage Scraping
+            </Link>
+            <Link
+              to="/jobs"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              <Briefcase className="w-4 h-4 mr-2" />
+              View Jobs
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
