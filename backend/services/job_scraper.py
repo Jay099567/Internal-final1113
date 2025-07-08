@@ -14,7 +14,7 @@ import json
 import os
 from dataclasses import dataclass, asdict
 from playwright.async_api import async_playwright, BrowserContext, Page
-from playwright_stealth import stealth_async
+from playwright_stealth import stealth
 from fake_useragent import UserAgent
 from pymongo import MongoClient
 from bson import ObjectId
@@ -172,7 +172,7 @@ class BaseJobScraper:
         page = await context.new_page()
         
         # Apply stealth plugin
-        await stealth_async(page)
+        await stealth(page)
         
         # Override webdriver property
         await page.add_init_script("""
