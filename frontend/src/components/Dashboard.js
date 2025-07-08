@@ -103,8 +103,24 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await axios.get(`${API}/dashboard/stats`);
-      setStats(response.data);
+      // Fetch main dashboard stats
+      const dashboardResponse = await axios.get(`${API}/dashboard/stats`);
+      
+      // Fetch scraping stats
+      const scrapingResponse = await axios.get(`${API}/scraping/status`);
+      
+      const combinedStats = {
+        ...dashboardResponse.data,
+        scraping: scrapingResponse.data.success ? scrapingResponse.data.stats : {
+          total_jobs_scraped: 0,
+          jobs_scraped_24h: 0,
+          scheduled_jobs: 0,
+          success_rate: 0,
+          is_running: false
+        }
+      };
+      
+      setStats(combinedStats);
     } catch (error) {
       console.error("Failed to fetch dashboard stats:", error);
       toast.error("Failed to load dashboard data");
