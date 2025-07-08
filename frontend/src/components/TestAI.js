@@ -80,6 +80,8 @@ const TestAI = () => {
   const [loading, setLoading] = useState({});
   const [results, setResults] = useState({});
   const [errors, setErrors] = useState({});
+  const [matchingResult, setMatchingResult] = useState(null);
+  const [matchingLoading, setMatchingLoading] = useState(false);
 
   useEffect(() => {
     fetchCandidates();
