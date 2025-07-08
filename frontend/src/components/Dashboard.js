@@ -186,7 +186,7 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Active Candidates"
-          value={stats.counts.candidates}
+          value={stats.total_candidates}
           icon={Users}
           trend="+12% this week"
           color="blue"
