@@ -21,6 +21,8 @@ function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/candidates/new" element={<CandidateOnboarding />} />
               <Route path="/candidates/:id" element={<CandidateProfile />} />
+              <Route path="/scraping" element={<JobScraping />} />
+              <Route path="/jobs" element={<JobsList />} />
               <Route path="/test-ai" element={<TestAI />} />
             </Routes>
           </main>
