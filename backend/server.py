@@ -326,6 +326,7 @@ async def test_job_match(
             raise HTTPException(status_code=404, detail="Candidate not found")
         
         # Test job matching
+        openrouter_service = get_openrouter_service()
         match_analysis = await openrouter_service.analyze_job_match(job_description, candidate)
         
         return {
