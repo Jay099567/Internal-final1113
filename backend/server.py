@@ -16,6 +16,7 @@ from models import *
 from services.openrouter import openrouter_service
 from services.gmail import gmail_service
 from services.resume_parser import resume_service
+from services.scheduler import get_scheduler, create_custom_schedule
 
 
 ROOT_DIR = Path(__file__).parent
