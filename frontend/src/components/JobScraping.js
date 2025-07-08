@@ -7,7 +7,7 @@ import {
   ChartBarIcon,
   ExclamationCircleIcon,
   CheckCircleIcon,
-  RefreshIcon
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 
 const JobScraping = () => {
