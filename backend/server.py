@@ -738,6 +738,28 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.on_event("startup")
+async def startup_event():
+    """Initialize services on startup"""
+    try:
+        # Start job scraping scheduler
+        scheduler = get_scheduler()
+        scheduler.start()
+        logger.info("Job scraping scheduler started")
+    except Exception as e:
+        logger.error(f"Failed to start scheduler: {e}")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
+    """Cleanup on shutdown"""
+    try:
+        # Stop scheduler
+        scheduler = get_scheduler()
+        scheduler.close()
+        logger.info("Scheduler stopped")
+    except Exception as e:
+        logger.error(f"Error stopping scheduler: {e}")
+    
+    # Close database connection
     client.close()
+    logger.info("Database connection closed")
