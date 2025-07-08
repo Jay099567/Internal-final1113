@@ -451,11 +451,14 @@ const Dashboard = () => {
             <p className="text-sm text-gray-600">Test job matching and AI tools</p>
           </Link>
           
-          <div className="p-4 border border-gray-200 rounded-lg bg-gray-50 opacity-60">
-            <Briefcase className="w-8 h-8 text-gray-400 mb-2" />
-            <h3 className="font-medium text-gray-500">Job Scraping</h3>
-            <p className="text-sm text-gray-400">Coming in Phase 2</p>
-          </div>
+          <Link
+            to="/matching"
+            className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
+          >
+            <Brain className="w-8 h-8 text-blue-600 mb-2" />
+            <h3 className="font-medium text-gray-900">AI Job Matching</h3>
+            <p className="text-sm text-gray-600">Smart job-candidate matching</p>
+          </Link>
         </div>
       </div>
     </div>
