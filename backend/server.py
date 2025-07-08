@@ -543,6 +543,10 @@ async def get_dashboard_stats():
         applications_count = await db.applications.count_documents({})
         jobs_count = await db.jobs_raw.count_documents({})
         
+        # Get job matching stats
+        matching_service = get_job_matching_service()
+        matching_stats = matching_service.get_matching_stats()
+        
         # Get recent activity
         recent_candidates = await db.candidates.find().sort("created_at", -1).limit(5).to_list(length=5)
         recent_applications = await db.applications.find().sort("created_at", -1).limit(5).to_list(length=5)
@@ -552,8 +556,10 @@ async def get_dashboard_stats():
                 "candidates": candidates_count,
                 "resumes": resumes_count,
                 "applications": applications_count,
-                "jobs": jobs_count
+                "jobs": jobs_count,
+                "job_matches": matching_stats.get('total_matches', 0)
             },
+            "matching_stats": matching_stats,
             "recent_activity": {
                 "candidates": [Candidate(**c) for c in recent_candidates],
                 "applications": [Application(**a) for a in recent_applications]
