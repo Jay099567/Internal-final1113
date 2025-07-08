@@ -24,6 +24,7 @@ function App() {
               <Route path="/candidates/:id" element={<CandidateProfile />} />
               <Route path="/scraping" element={<JobScraping />} />
               <Route path="/jobs" element={<JobsList />} />
+              <Route path="/matching" element={<JobMatching />} />
               <Route path="/test-ai" element={<TestAI />} />
             </Routes>
           </main>
