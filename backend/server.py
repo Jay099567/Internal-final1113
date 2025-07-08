@@ -373,6 +373,163 @@ async def test_cover_letter_generation(
         raise HTTPException(status_code=500, detail=f"Cover letter generation failed: {str(e)}")
 
 # =============================================================================
+# JOB MATCHING ENDPOINTS (PHASE 3)
+# =============================================================================
+
+@api_router.post("/candidates/{candidate_id}/process-matches")
+async def process_candidate_matches(candidate_id: str, max_jobs: int = 50):
+    """Process job matches for a specific candidate"""
+    try:
+        # Check if candidate exists
+        candidate = await db.candidates.find_one({"id": candidate_id})
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        
+        # Process matches
+        matching_service = get_job_matching_service()
+        matches = await matching_service.process_candidate_matches(candidate_id, max_jobs)
+        
+        return {
+            "candidate_id": candidate_id,
+            "candidate_name": candidate.get('full_name'),
+            "matches_processed": len(matches),
+            "high_priority_matches": len([m for m in matches if m.priority.value == "high"]),
+            "should_apply_count": len([m for m in matches if m.should_apply]),
+            "matches": [
+                {
+                    "job_id": match.job_id,
+                    "match_score": round(match.match_score, 3),
+                    "priority": match.priority.value,
+                    "should_apply": match.should_apply,
+                    "explanation": match.explanation,
+                    "keywords_matched": match.keywords_matched,
+                    "strengths": match.strengths,
+                    "missing_requirements": match.missing_requirements
+                }
+                for match in matches[:10]  # Return top 10 for API response
+            ]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to process matches: {str(e)}")
+
+@api_router.get("/candidates/{candidate_id}/matches")
+async def get_candidate_matches(candidate_id: str, limit: int = 50):
+    """Get saved job matches for a candidate"""
+    try:
+        # Check if candidate exists
+        candidate = await db.candidates.find_one({"id": candidate_id})
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        
+        # Get matches
+        matching_service = get_job_matching_service()
+        matches = matching_service.get_candidate_matches(candidate_id, limit)
+        
+        return {
+            "candidate_id": candidate_id,
+            "candidate_name": candidate.get('full_name'),
+            "total_matches": len(matches),
+            "matches": matches
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get matches: {str(e)}")
+
+@api_router.post("/matching/process-all")
+async def process_all_candidate_matches():
+    """Process job matches for all active candidates"""
+    try:
+        matching_service = get_job_matching_service()
+        results = await matching_service.process_all_candidates()
+        
+        return {
+            "message": "Batch matching completed",
+            "results": results
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Batch matching failed: {str(e)}")
+
+@api_router.get("/matching/stats")
+async def get_matching_statistics():
+    """Get job matching statistics"""
+    try:
+        matching_service = get_job_matching_service()
+        stats = matching_service.get_matching_stats()
+        
+        return {
+            "success": True,
+            "stats": stats
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get matching stats: {str(e)}")
+
+@api_router.post("/matching/test")
+async def test_job_matching(
+    candidate_id: str,
+    job_title: str = "Software Developer",
+    job_description: str = "We are looking for a skilled software developer with experience in Python, React, and cloud technologies."
+):
+    """Test job matching with sample data"""
+    try:
+        # Check if candidate exists
+        candidate = await db.candidates.find_one({"id": candidate_id})
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        
+        # Create sample job
+        sample_job = {
+            "_id": f"test_{uuid.uuid4().hex[:8]}",
+            "title": job_title,
+            "company": "Test Company",
+            "location": "Remote",
+            "description": job_description,
+            "experience_level": "mid",
+            "skills": ["python", "react", "aws"],
+            "remote": True,
+            "salary": "$80,000 - $120,000",
+            "scraped_at": datetime.utcnow().isoformat()
+        }
+        
+        # Test matching
+        matching_service = get_job_matching_service()
+        match = await matching_service.match_job_to_candidate(sample_job, candidate)
+        
+        if match:
+            return {
+                "success": True,
+                "match": {
+                    "match_score": round(match.match_score, 3),
+                    "priority": match.priority.value,
+                    "should_apply": match.should_apply,
+                    "explanation": match.explanation,
+                    "salary_match": match.salary_match,
+                    "location_match": match.location_match,
+                    "visa_match": match.visa_match,
+                    "skills_match_score": round(match.skills_match_score, 3),
+                    "experience_match": match.experience_match,
+                    "keywords_matched": match.keywords_matched,
+                    "strengths": match.strengths,
+                    "missing_requirements": match.missing_requirements,
+                    "reasoning": match.reasoning
+                },
+                "sample_job": sample_job
+            }
+        else:
+            return {
+                "success": False,
+                "message": "No match generated",
+                "sample_job": sample_job
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Test matching failed: {str(e)}")
+
+# =============================================================================
 # DASHBOARD ENDPOINTS
 # =============================================================================
 
