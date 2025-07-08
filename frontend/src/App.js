@@ -6,6 +6,8 @@ import Dashboard from "./components/Dashboard";
 import CandidateOnboarding from "./components/CandidateOnboarding";
 import CandidateProfile from "./components/CandidateProfile";
 import TestAI from "./components/TestAI";
+import JobScraping from "./components/JobScraping";
+import JobsList from "./components/JobsList";
 import Navigation from "./components/Navigation";
 
 function App() {
