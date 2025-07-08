@@ -9,6 +9,7 @@ import json
 import uuid
 import time
 import os
+import sys
 from typing import Dict, Any, List, Optional
 import unittest
 
@@ -21,6 +22,32 @@ with open('/app/frontend/.env', 'r') as f:
 
 # API base URL
 API_URL = f"{BACKEND_URL}/api"
+
+print(f"Using API URL: {API_URL}")
+
+# Test API connection
+try:
+    response = requests.get(f"{API_URL}/health", timeout=10)
+    if response.status_code != 200:
+        print(f"API health check failed with status code: {response.status_code}")
+        print(f"Response: {response.text}")
+        sys.exit(1)
+    print("API connection successful!")
+except Exception as e:
+    print(f"Failed to connect to API: {str(e)}")
+    print("Using local development URL instead")
+    API_URL = "http://localhost:8001/api"
+    print(f"Trying local API URL: {API_URL}")
+    try:
+        response = requests.get(f"{API_URL}/health", timeout=5)
+        if response.status_code == 200:
+            print("Local API connection successful!")
+        else:
+            print(f"Local API health check failed with status code: {response.status_code}")
+            sys.exit(1)
+    except Exception as e:
+        print(f"Failed to connect to local API: {str(e)}")
+        sys.exit(1)
 
 class TestEliteJobHunterX(unittest.TestCase):
     """Test suite for Elite JobHunter X backend API"""
