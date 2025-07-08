@@ -410,6 +410,316 @@ async def get_status_checks():
     status_checks = await db.status_checks.find().to_list(1000)
     return [StatusCheck(**status_check) for status_check in status_checks]
 
+# =============================================================================
+# JOB SCRAPING ENDPOINTS
+# =============================================================================
+
+class ScrapingRequest(BaseModel):
+    """Request model for manual scraping"""
+    scraper: str = Field(..., description="Scraper name (e.g., 'indeed')")
+    query: str = Field(..., description="Job search query")
+    location: str = Field(default="Remote", description="Location to search")
+    max_pages: int = Field(default=3, description="Maximum pages to scrape")
+
+class ScheduleRequest(BaseModel):
+    """Request model for scheduling scraping"""
+    name: str = Field(..., description="Schedule name")
+    scraper: str = Field(..., description="Scraper name")
+    query: str = Field(..., description="Job search query")
+    location: str = Field(default="Remote", description="Location to search")
+    interval_hours: int = Field(default=6, description="Interval in hours")
+    max_pages: int = Field(default=3, description="Maximum pages to scrape")
+
+@api_router.post("/scraping/start")
+async def start_scraping(request: ScrapingRequest):
+    """Start manual job scraping"""
+    try:
+        scheduler = get_scheduler()
+        
+        # Create search parameters
+        search_params = {
+            'q': request.query,
+            'l': request.location,
+            'max_pages': request.max_pages
+        }
+        
+        # Run manual scraping
+        results = await scheduler.run_manual_scraping(
+            config_name=f"manual_{request.scraper}_{request.query}",
+            scraper_name=request.scraper,
+            search_params=search_params
+        )
+        
+        return {
+            "success": True,
+            "message": f"Started scraping {request.query} jobs on {request.scraper}",
+            "results": results
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to start scraping: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to start scraping: {str(e)}")
+
+@api_router.get("/scraping/status")
+async def get_scraping_status():
+    """Get current scraping status and statistics"""
+    try:
+        scheduler = get_scheduler()
+        
+        # Get statistics
+        stats = scheduler.get_scraping_stats()
+        
+        # Get scheduled jobs
+        scheduled_jobs = scheduler.get_scheduled_jobs()
+        
+        # Get recent logs
+        recent_logs = scheduler.get_scraping_logs(limit=10)
+        
+        return {
+            "success": True,
+            "stats": stats,
+            "scheduled_jobs": scheduled_jobs,
+            "recent_logs": recent_logs
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get scraping status: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get scraping status: {str(e)}")
+
+@api_router.post("/scraping/schedule")
+async def create_scraping_schedule(request: ScheduleRequest):
+    """Create a new scraping schedule"""
+    try:
+        scheduler = get_scheduler()
+        
+        # Create schedule configuration
+        config = create_custom_schedule(
+            name=request.name,
+            scraper=request.scraper,
+            query=request.query,
+            location=request.location,
+            interval_hours=request.interval_hours,
+            max_pages=request.max_pages
+        )
+        
+        # Add schedule
+        scheduler.add_scraping_schedule(request.name, config)
+        
+        return {
+            "success": True,
+            "message": f"Created scraping schedule: {request.name}",
+            "schedule": config
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to create schedule: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to create schedule: {str(e)}")
+
+@api_router.delete("/scraping/schedule/{schedule_name}")
+async def delete_scraping_schedule(schedule_name: str):
+    """Delete a scraping schedule"""
+    try:
+        scheduler = get_scheduler()
+        scheduler.remove_scraping_schedule(schedule_name)
+        
+        return {
+            "success": True,
+            "message": f"Deleted scraping schedule: {schedule_name}"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to delete schedule: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete schedule: {str(e)}")
+
+@api_router.get("/scraping/logs")
+async def get_scraping_logs(limit: int = Query(50, ge=1, le=500)):
+    """Get scraping logs"""
+    try:
+        scheduler = get_scheduler()
+        logs = scheduler.get_scraping_logs(limit=limit)
+        
+        return {
+            "success": True,
+            "logs": logs,
+            "total": len(logs)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get scraping logs: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get scraping logs: {str(e)}")
+
+# =============================================================================
+# SCRAPED JOBS ENDPOINTS
+# =============================================================================
+
+@api_router.get("/jobs/raw")
+async def get_scraped_jobs(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=500),
+    source: Optional[str] = Query(None, description="Filter by source (e.g., 'indeed')"),
+    location: Optional[str] = Query(None, description="Filter by location"),
+    title: Optional[str] = Query(None, description="Filter by job title"),
+    company: Optional[str] = Query(None, description="Filter by company"),
+    remote: Optional[bool] = Query(None, description="Filter by remote jobs")
+):
+    """Get scraped job listings with filtering"""
+    try:
+        # Build filter query
+        filter_query = {}
+        
+        if source:
+            filter_query['source'] = source
+        if location:
+            filter_query['location'] = {"$regex": location, "$options": "i"}
+        if title:
+            filter_query['title'] = {"$regex": title, "$options": "i"}
+        if company:
+            filter_query['company'] = {"$regex": company, "$options": "i"}
+        if remote is not None:
+            filter_query['remote'] = remote
+        
+        # Get jobs with pagination
+        jobs = await db.jobs_raw.find(filter_query).skip(skip).limit(limit).sort([('scraped_at', -1)]).to_list(length=limit)
+        
+        # Get total count
+        total_count = await db.jobs_raw.count_documents(filter_query)
+        
+        return {
+            "success": True,
+            "jobs": jobs,
+            "total": total_count,
+            "skip": skip,
+            "limit": limit
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get scraped jobs: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get scraped jobs: {str(e)}")
+
+@api_router.get("/jobs/stats")
+async def get_jobs_stats():
+    """Get job scraping statistics"""
+    try:
+        # Get total jobs
+        total_jobs = await db.jobs_raw.count_documents({})
+        
+        # Get jobs by source
+        source_pipeline = [
+            {"$group": {"_id": "$source", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        sources = await db.jobs_raw.aggregate(source_pipeline).to_list(length=None)
+        
+        # Get recent jobs (last 7 days)
+        seven_days_ago = datetime.now() - timedelta(days=7)
+        recent_jobs = await db.jobs_raw.count_documents({
+            'scraped_at': {'$gte': seven_days_ago.isoformat()}
+        })
+        
+        # Get jobs by location
+        location_pipeline = [
+            {"$group": {"_id": "$location", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        locations = await db.jobs_raw.aggregate(location_pipeline).to_list(length=None)
+        
+        # Get remote vs on-site
+        remote_stats = await db.jobs_raw.aggregate([
+            {"$group": {"_id": "$remote", "count": {"$sum": 1}}}
+        ]).to_list(length=None)
+        
+        return {
+            "success": True,
+            "total_jobs": total_jobs,
+            "recent_jobs_7d": recent_jobs,
+            "jobs_by_source": sources,
+            "jobs_by_location": locations,
+            "remote_stats": remote_stats
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get job stats: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get job stats: {str(e)}")
+
+@api_router.get("/jobs/search")
+async def search_jobs(
+    query: str = Query(..., description="Search query"),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Search jobs using text search"""
+    try:
+        # Create text search
+        search_query = {
+            "$or": [
+                {"title": {"$regex": query, "$options": "i"}},
+                {"description": {"$regex": query, "$options": "i"}},
+                {"company": {"$regex": query, "$options": "i"}},
+                {"location": {"$regex": query, "$options": "i"}}
+            ]
+        }
+        
+        jobs = await db.jobs_raw.find(search_query).limit(limit).sort([('scraped_at', -1)]).to_list(length=limit)
+        
+        return {
+            "success": True,
+            "jobs": jobs,
+            "query": query,
+            "total": len(jobs)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to search jobs: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to search jobs: {str(e)}")
+
+@api_router.post("/scraping/scheduler/start")
+async def start_scheduler():
+    """Start the job scraping scheduler"""
+    try:
+        scheduler = get_scheduler()
+        scheduler.start()
+        
+        return {
+            "success": True,
+            "message": "Job scraping scheduler started successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to start scheduler: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to start scheduler: {str(e)}")
+
+@api_router.post("/scraping/scheduler/stop")
+async def stop_scheduler():
+    """Stop the job scraping scheduler"""
+    try:
+        scheduler = get_scheduler()
+        scheduler.stop()
+        
+        return {
+            "success": True,
+            "message": "Job scraping scheduler stopped successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to stop scheduler: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to stop scheduler: {str(e)}")
+
+@api_router.post("/scraping/scheduler/restart")
+async def restart_scheduler():
+    """Restart the job scraping scheduler"""
+    try:
+        scheduler = get_scheduler()
+        scheduler.restart()
+        
+        return {
+            "success": True,
+            "message": "Job scraping scheduler restarted successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to restart scheduler: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to restart scheduler: {str(e)}")
+
 # Include the router in the main app
 app.include_router(api_router)
 
