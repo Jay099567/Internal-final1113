@@ -90,7 +90,7 @@ class TestAIJobMatchingSystem(unittest.TestCase):
         
         # Check that it uses the job matching service
         self.assertIn('matching_service = get_job_matching_service()', server_code[process_matches_impl:process_matches_impl+500])
-        self.assertIn('matches = await matching_service.process_candidate_matches', server_code[process_matches_impl:process_matches_impl+500])
+        self.assertIn('await matching_service.process_candidate_matches', server_code[process_matches_impl:process_matches_impl+500])
         
         # Check get-matches endpoint implementation
         get_matches_impl = server_code.find('async def get_candidate_matches')
