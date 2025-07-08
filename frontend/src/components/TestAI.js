@@ -123,19 +123,26 @@ const TestAI = () => {
     setTestState('jobMatch', { loading: true });
 
     try {
-      const response = await axios.post(`${API}/ai/test/job-match`, {
+      const response = await axios.post(`${API}/matching/test`, {
         candidate_id: selectedCandidate,
+        job_title: "Software Developer Test",
         job_description: jobDescription
       });
 
-      setTestState('jobMatch', { result: response.data.match_analysis });
+      setTestState('jobMatch', { 
+        loading: false, 
+        result: response.data.match,
+        error: null 
+      });
       toast.success("Job matching test completed!");
     } catch (error) {
       console.error("Job matching test failed:", error);
-      setTestState('jobMatch', { error: error.response?.data?.detail || "Test failed" });
+      setTestState('jobMatch', { 
+        loading: false, 
+        result: null, 
+        error: error.response?.data?.detail || error.message 
+      });
       toast.error("Job matching test failed");
-    } finally {
-      setTestState('jobMatch', { loading: false });
     }
   };
 
