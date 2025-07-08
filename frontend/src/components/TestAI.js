@@ -173,7 +173,7 @@ const TestAI = () => {
     }
   };
 
-
+  const checkSystemHealth = async () => {
     setTestState('health', { loading: true });
 
     try {
