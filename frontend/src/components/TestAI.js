@@ -166,7 +166,31 @@ const TestAI = () => {
     }
   };
 
-  const testSystemHealth = async () => {
+  const testJobMatching = async () => {
+    if (!selectedCandidate) {
+      toast.error("Please select a candidate first");
+      return;
+    }
+
+    setMatchingLoading(true);
+    setMatchingResult(null);
+    
+    try {
+      const response = await axios.post(`${API}/matching/test`, {
+        candidate_id: selectedCandidate,
+        job_title: "Senior Software Developer",
+        job_description: "We are looking for a Senior Software Developer with 5+ years of experience in Python, React, AWS, and microservices architecture. The role involves building scalable web applications, mentoring junior developers, and working in an agile environment. Remote work available with competitive salary $100,000-$140,000."
+      });
+      
+      setMatchingResult(response.data);
+      toast.success("Job matching test completed!");
+    } catch (error) {
+      console.error("Job matching test failed:", error);
+      toast.error("Job matching test failed");
+    } finally {
+      setMatchingLoading(false);
+    }
+  };
     setTestState('health', { loading: true });
 
     try {
