@@ -294,5 +294,11 @@ class OpenRouterService:
                 "follow_up_delay": "1 week"
             }
 
-# Global instance
-openrouter_service = OpenRouterService()
+# Global instance - lazy initialization
+openrouter_service = None
+
+def get_openrouter_service():
+    global openrouter_service
+    if openrouter_service is None:
+        openrouter_service = OpenRouterService()
+    return openrouter_service
