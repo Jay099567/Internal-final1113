@@ -51,9 +51,13 @@ async def health_check():
         # Check database connection
         await db.command("ping")
         
-        # Check OpenRouter API
-        openrouter_service = get_openrouter_service()
-        openrouter_status = "operational" if openrouter_service.api_key else "missing_api_key"
+        # Check OpenRouter API (simplified check)
+        try:
+            openrouter_service = get_openrouter_service()
+            openrouter_status = "operational" if openrouter_service.api_key else "missing_api_key"
+        except Exception as e:
+            logger.warning(f"OpenRouter service check failed: {e}")
+            openrouter_status = "error"
         
         return {
             "status": "healthy",
