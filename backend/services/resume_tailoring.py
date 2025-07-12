@@ -45,7 +45,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 
-from ..models import (
+from models import (
     ResumeVersion, ATSAnalysis, ResumeGeneticPool, 
     ResumePerformanceMetrics, KeywordOptimization,
     TailoringStrategy, ATSOptimization, ResumeFormat
