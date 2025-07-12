@@ -361,7 +361,7 @@ class ATSScoreEngine:
         else:
             analysis.keyword_score = 70.0  # Default score without job description
         
-        # Calculate overall score
+        # Calculate overall score (normalize to 0-100)
         analysis.overall_score = (
             analysis.contact_score * self.section_weights['contact_info'] +
             analysis.format_score * self.section_weights['format'] +
@@ -369,8 +369,11 @@ class ATSScoreEngine:
             analysis.experience_score * self.section_weights['experience'] +
             analysis.education_score * self.section_weights['education'] +
             analysis.skills_score * self.section_weights['skills'] +
-            analysis.keyword_score * 0.3  # Keyword score has high weight
+            analysis.keyword_score * 0.2  # Keyword score weight
         )
+        
+        # Ensure score is within 0-100 range
+        analysis.overall_score = min(max(analysis.overall_score, 0), 100)
         
         # Generate recommendations
         analysis.recommendations = self._generate_recommendations(analysis)
