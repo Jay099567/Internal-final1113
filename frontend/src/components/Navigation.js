@@ -152,7 +152,7 @@ const Navigation = () => {
       <div className="p-4 border-t border-slate-700">
         <div className="text-xs text-slate-400 text-center">
           <div>Elite JobHunter X v1.0.0</div>
-          <div className="mt-1">Phase 3: AI Job Matching</div>
+          <div className="mt-1">Phase 4: Resume Tailoring</div>
         </div>
       </div>
     </div>
