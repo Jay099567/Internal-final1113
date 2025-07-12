@@ -129,7 +129,7 @@ class CompanyResearchEngine:
             return {
                 "company_name": company_name,
                 "domain": company_domain,
-                "research_timestamp": datetime.utcnow(),
+                "research_timestamp": datetime.utcnow().isoformat(),
                 "error": str(e)
             }
     
