@@ -1070,7 +1070,9 @@ async def analyze_candidate_resume_performance(candidate_id: str):
 async def test_ats_scoring():
     """Test ATS scoring engine with sample data"""
     try:
-        tailoring_service = get_resume_tailoring_service(db)
+        # Create ATS engine directly without full tailoring service
+        from services.resume_tailoring import ATSScoreEngine
+        ats_engine = ATSScoreEngine()
         
         sample_resume = """
 John Doe
@@ -1103,7 +1105,7 @@ Requirements: 5+ years Python experience, React, AWS, Docker, Kubernetes
 Strong experience with microservices and API development
 """
         
-        analysis = tailoring_service.ats_engine.calculate_ats_score(sample_resume, sample_job)
+        analysis = ats_engine.calculate_ats_score(sample_resume, sample_job)
         
         return {
             "success": True,
