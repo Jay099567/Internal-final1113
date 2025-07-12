@@ -1190,6 +1190,360 @@ async def get_resume_tailoring_stats():
 # END RESUME TAILORING ENDPOINTS
 # ================================================================================
 
+
+# ================================================================================
+# COVER LETTER GENERATION ENDPOINTS (PHASE 5)
+# ================================================================================
+
+from services.cover_letter import get_cover_letter_service
+from models import OutreachTone, CoverLetterTemplate, CompanyResearch, CoverLetterPerformance
+
+class CoverLetterGenerationRequest(BaseModel):
+    candidate_id: str
+    job_id: str
+    job_description: str
+    company_name: str
+    company_domain: Optional[str] = None
+    position_title: Optional[str] = ""
+    hiring_manager: Optional[str] = ""
+    tone: OutreachTone = OutreachTone.FORMAL
+    include_research: bool = True
+
+class MultipleCoverLetterRequest(BaseModel):
+    candidate_id: str
+    job_id: str
+    job_description: str
+    company_name: str
+    company_domain: Optional[str] = None
+    position_title: Optional[str] = ""
+    versions_count: int = 3
+
+@api_router.post("/cover-letters/generate")
+async def generate_cover_letter(request: CoverLetterGenerationRequest):
+    """Generate a personalized cover letter with company research and AI optimization"""
+    try:
+        cover_letter_service = get_cover_letter_service(db)
+        
+        result = await cover_letter_service.generate_cover_letter(
+            candidate_id=request.candidate_id,
+            job_id=request.job_id,
+            job_description=request.job_description,
+            company_name=request.company_name,
+            company_domain=request.company_domain,
+            tone=request.tone,
+            position_title=request.position_title,
+            hiring_manager=request.hiring_manager,
+            include_research=request.include_research
+        )
+        
+        return {
+            "success": True,
+            "message": "Cover letter generated successfully",
+            "data": result
+        }
+        
+    except Exception as e:
+        logger.error(f"Cover letter generation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Cover letter generation failed: {str(e)}")
+
+@api_router.post("/cover-letters/generate-multiple")
+async def generate_multiple_cover_letters(request: MultipleCoverLetterRequest):
+    """Generate multiple cover letter versions for A/B testing"""
+    try:
+        cover_letter_service = get_cover_letter_service(db)
+        
+        versions = await cover_letter_service.generate_multiple_versions(
+            candidate_id=request.candidate_id,
+            job_id=request.job_id,
+            job_description=request.job_description,
+            company_name=request.company_name,
+            company_domain=request.company_domain,
+            position_title=request.position_title,
+            versions_count=request.versions_count
+        )
+        
+        return {
+            "success": True,
+            "message": f"Generated {len(versions)} cover letter versions",
+            "data": {
+                "versions": versions,
+                "total_count": len(versions)
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Multiple cover letter generation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Multiple cover letter generation failed: {str(e)}")
+
+@api_router.get("/candidates/{candidate_id}/cover-letters")
+async def get_candidate_cover_letters(candidate_id: str, limit: int = 20, skip: int = 0):
+    """Get all cover letters for a specific candidate"""
+    try:
+        cover_letters = await db.cover_letters.find(
+            {"candidate_id": candidate_id}
+        ).sort([('created_at', -1)]).skip(skip).limit(limit).to_list(length=limit)
+        
+        total = await db.cover_letters.count_documents({"candidate_id": candidate_id})
+        
+        return {
+            "success": True,
+            "data": {
+                "cover_letters": cover_letters,
+                "total": total,
+                "limit": limit,
+                "skip": skip
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get candidate cover letters: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get candidate cover letters: {str(e)}")
+
+@api_router.get("/cover-letters/{cover_letter_id}")
+async def get_cover_letter(cover_letter_id: str):
+    """Get a specific cover letter by ID"""
+    try:
+        cover_letter = await db.cover_letters.find_one({"id": cover_letter_id})
+        if not cover_letter:
+            raise HTTPException(status_code=404, detail="Cover letter not found")
+        
+        return {
+            "success": True,
+            "data": cover_letter
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get cover letter: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get cover letter: {str(e)}")
+
+@api_router.get("/cover-letters/{cover_letter_id}/performance")
+async def get_cover_letter_performance(cover_letter_id: str):
+    """Get performance analytics for a specific cover letter"""
+    try:
+        cover_letter_service = get_cover_letter_service(db)
+        performance = await cover_letter_service.get_performance_analytics(cover_letter_id)
+        
+        return {
+            "success": True,
+            "data": performance
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get cover letter performance: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get cover letter performance: {str(e)}")
+
+@api_router.delete("/cover-letters/{cover_letter_id}")
+async def delete_cover_letter(cover_letter_id: str):
+    """Delete a cover letter"""
+    try:
+        result = await db.cover_letters.delete_one({"id": cover_letter_id})
+        
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Cover letter not found")
+        
+        return {
+            "success": True,
+            "message": "Cover letter deleted successfully"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to delete cover letter: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to delete cover letter: {str(e)}")
+
+@api_router.get("/cover-letters/{cover_letter_id}/download")
+async def download_cover_letter_pdf(cover_letter_id: str):
+    """Download cover letter as PDF"""
+    try:
+        cover_letter = await db.cover_letters.find_one({"id": cover_letter_id})
+        if not cover_letter:
+            raise HTTPException(status_code=404, detail="Cover letter not found")
+        
+        pdf_url = cover_letter.get('pdf_url')
+        if not pdf_url or not os.path.exists(pdf_url):
+            raise HTTPException(status_code=404, detail="PDF file not found")
+        
+        from fastapi.responses import FileResponse
+        return FileResponse(
+            path=pdf_url,
+            media_type='application/pdf',
+            filename=f"cover_letter_{cover_letter_id}.pdf"
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to download cover letter PDF: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to download cover letter PDF: {str(e)}")
+
+@api_router.post("/cover-letters/{cover_letter_id}/track-usage")
+async def track_cover_letter_usage(cover_letter_id: str):
+    """Track usage of a cover letter (increment usage count)"""
+    try:
+        result = await db.cover_letters.update_one(
+            {"id": cover_letter_id},
+            {
+                "$inc": {"used_count": 1},
+                "$set": {"updated_at": datetime.utcnow()}
+            }
+        )
+        
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Cover letter not found")
+        
+        return {
+            "success": True,
+            "message": "Cover letter usage tracked"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to track cover letter usage: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to track cover letter usage: {str(e)}")
+
+@api_router.get("/cover-letters/stats/overview")
+async def get_cover_letter_stats():
+    """Get comprehensive cover letter statistics"""
+    try:
+        # Basic counts
+        total_cover_letters = await db.cover_letters.count_documents({})
+        total_applications = await db.applications.count_documents({
+            "cover_letter_id": {"$exists": True, "$ne": None}
+        })
+        
+        # Tone distribution
+        tone_pipeline = [
+            {"$group": {"_id": "$tone", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        tone_distribution = await db.cover_letters.aggregate(tone_pipeline).to_list(length=10)
+        
+        # Performance metrics
+        performance_pipeline = [
+            {"$match": {"success_rate": {"$exists": True, "$ne": None}}},
+            {"$group": {
+                "_id": None,
+                "avg_success_rate": {"$avg": "$success_rate"},
+                "avg_usage_count": {"$avg": "$used_count"},
+                "total_usage": {"$sum": "$used_count"}
+            }}
+        ]
+        performance_stats = await db.cover_letters.aggregate(performance_pipeline).to_list(length=1)
+        performance = performance_stats[0] if performance_stats else {
+            "avg_success_rate": 0,
+            "avg_usage_count": 0,
+            "total_usage": 0
+        }
+        
+        # Recent activity
+        recent_cover_letters = await db.cover_letters.find({}).sort([
+            ('created_at', -1)
+        ]).limit(5).to_list(length=5)
+        
+        return {
+            "success": True,
+            "data": {
+                "overview": {
+                    "total_cover_letters": total_cover_letters,
+                    "total_applications": total_applications,
+                    "avg_success_rate": round(performance["avg_success_rate"], 2),
+                    "avg_usage_count": round(performance["avg_usage_count"], 2),
+                    "total_usage": performance["total_usage"]
+                },
+                "tone_distribution": [
+                    {"tone": item["_id"], "count": item["count"]}
+                    for item in tone_distribution
+                ],
+                "recent_activity": [
+                    {
+                        "id": letter.get("id"),
+                        "candidate_id": letter.get("candidate_id"),
+                        "tone": letter.get("tone"),
+                        "created_at": letter.get("created_at"),
+                        "usage_count": letter.get("used_count", 0)
+                    }
+                    for letter in recent_cover_letters
+                ]
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get cover letter stats: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get cover letter stats: {str(e)}")
+
+@api_router.post("/cover-letters/test-generation")
+async def test_cover_letter_generation():
+    """Test cover letter generation with sample data"""
+    try:
+        # Create a test candidate if needed
+        test_candidate = {
+            "id": "test_candidate_cover_letter",
+            "full_name": "Alex Johnson",
+            "email": "alex.johnson@example.com",
+            "phone": "+1-555-0199",
+            "location": "Seattle, WA",
+            "target_roles": ["Senior Software Engineer", "Full Stack Developer"],
+            "skills": ["Python", "JavaScript", "React", "AWS", "Docker", "Kubernetes"],
+            "years_experience": 6,
+            "created_at": datetime.utcnow()
+        }
+        
+        # Upsert test candidate
+        await db.candidates.update_one(
+            {"id": test_candidate["id"]},
+            {"$set": test_candidate},
+            upsert=True
+        )
+        
+        cover_letter_service = get_cover_letter_service(db)
+        
+        sample_job_description = """
+        We are seeking a Senior Python Developer to join our innovative team at TechCorp.
+        
+        Requirements:
+        - 5+ years of experience with Python development
+        - Strong experience with React and JavaScript
+        - Experience with AWS cloud services
+        - Docker and Kubernetes experience preferred
+        - Bachelor's degree in Computer Science or related field
+        - Excellent communication and teamwork skills
+        
+        We offer competitive salary, flexible work arrangements, and opportunities for growth.
+        """
+        
+        result = await cover_letter_service.generate_cover_letter(
+            candidate_id=test_candidate["id"],
+            job_id="test_job_123",
+            job_description=sample_job_description,
+            company_name="TechCorp",
+            company_domain="techcorp.com",
+            tone=OutreachTone.WARM,
+            position_title="Senior Python Developer",
+            hiring_manager="Sarah Martinez"
+        )
+        
+        return {
+            "success": True,
+            "message": "Cover letter generation test completed successfully",
+            "test_data": {
+                "candidate": test_candidate,
+                "job_description": sample_job_description,
+                "result": result
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Cover letter generation test failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Cover letter generation test failed: {str(e)}")
+
+# ================================================================================
+# END COVER LETTER GENERATION ENDPOINTS
+# ================================================================================
+
 # Include the router in the main app
 app.include_router(api_router)
 
