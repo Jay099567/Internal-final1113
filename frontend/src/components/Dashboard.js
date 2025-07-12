@@ -516,6 +516,57 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+      {/* Cover Letter Management Statistics */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">📝 Cover Letter Generator</h2>
+              <p className="text-sm text-gray-600 mt-1">Multi-tone AI cover letters with company research</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <span className="text-sm font-medium text-gray-700">Phase 5 Complete</span>
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{stats.coverLetters?.total_cover_letters || 0}</div>
+              <div className="text-sm text-gray-600">Cover Letters</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{stats.coverLetters?.total_applications || 0}</div>
+              <div className="text-sm text-gray-600">Applications</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">{stats.coverLetters?.avg_success_rate || 0}%</div>
+              <div className="text-sm text-gray-600">Success Rate</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">{stats.coverLetters?.total_usage || 0}</div>
+              <div className="text-sm text-gray-600">Total Usage</div>
+            </div>
+          </div>
+          <div className="mt-6 flex space-x-4">
+            <Link
+              to="/cover-letters"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Generate Cover Letters
+            </Link>
+            <Link
+              to="/cover-letters"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              View Analytics
+            </Link>
+          </div>
+        </div>
+      </div>
 
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
