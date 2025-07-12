@@ -9,6 +9,7 @@ import TestAI from "./components/TestAI";
 import JobScraping from "./components/JobScraping";
 import JobsList from "./components/JobsList";
 import JobMatching from "./components/JobMatching";
+import ResumeTailoring from "./components/ResumeTailoring";
 import Navigation from "./components/Navigation";
 
 function App() {
