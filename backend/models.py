@@ -269,8 +269,63 @@ class CoverLetter(BaseModel):
     reasoning: Optional[str] = None
     company_research: Optional[str] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
     used_count: int = 0
     success_rate: Optional[float] = None
+    word_count: int = 0
+    personalization_score: Optional[float] = None
+    sentiment_analysis: Optional[Dict[str, Any]] = None
+
+
+class CoverLetterTemplate(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    tone: OutreachTone
+    industry: Optional[str] = None
+    template_content: str
+    variables: List[str] = []  # List of variables like {company_name}, {position}
+    success_rate: Optional[float] = None
+    usage_count: int = 0
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class CompanyResearch(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    company_name: str
+    domain: Optional[str] = None
+    about: Optional[str] = None
+    mission: Optional[str] = None
+    values: List[str] = []
+    recent_news: List[str] = []
+    culture_keywords: List[str] = []
+    tech_stack: List[str] = []
+    company_size: Optional[str] = None
+    industry: Optional[str] = None
+    locations: List[str] = []
+    leadership: List[Dict[str, str]] = []
+    awards: List[str] = []
+    sentiment_score: float = 0.0
+    key_initiatives: List[str] = []
+    research_timestamp: datetime = Field(default_factory=datetime.utcnow)
+    research_sources: List[str] = []
+    research_quality_score: Optional[float] = None
+
+
+class CoverLetterPerformance(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    cover_letter_id: str
+    candidate_id: str
+    applications_sent: int = 0
+    responses_received: int = 0
+    interviews_scheduled: int = 0
+    offers_received: int = 0
+    response_rate: float = 0.0
+    interview_rate: float = 0.0
+    offer_rate: float = 0.0
+    avg_response_time_hours: Optional[float] = None
+    performance_score: float = 0.0
+    last_updated: datetime = Field(default_factory=datetime.utcnow)
+    a_b_test_group: Optional[str] = None
 
 
 class Application(BaseModel):
