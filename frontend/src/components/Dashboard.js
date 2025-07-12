@@ -125,6 +125,24 @@ const Dashboard = () => {
         console.warn("Resume tailoring stats not available:", tailoringError);
       }
       
+      // Fetch cover letter stats
+      let coverLetterStats = {
+        total_cover_letters: 0,
+        total_applications: 0,
+        avg_success_rate: 0,
+        total_usage: 0,
+        tone_distribution: []
+      };
+      
+      try {
+        const coverLetterResponse = await axios.get(`${API}/cover-letters/stats/overview`);
+        if (coverLetterResponse.data.success) {
+          coverLetterStats = coverLetterResponse.data.data.overview;
+        }
+      } catch (coverLetterError) {
+        console.warn("Cover letter stats not available:", coverLetterError);
+      }
+      
       const combinedStats = {
         ...dashboardResponse.data,
         scraping: scrapingResponse.data.success ? scrapingResponse.data.stats : {
@@ -134,7 +152,8 @@ const Dashboard = () => {
           success_rate: 0,
           is_running: false
         },
-        tailoring: tailoringStats
+        tailoring: tailoringStats,
+        coverLetters: coverLetterStats
       };
       
       setStats(combinedStats);
