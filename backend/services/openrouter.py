@@ -13,13 +13,21 @@ class OpenRouterService:
         if not self.api_key:
             raise ValueError("OPENROUTER_API_KEY not found in environment variables")
         
-        # Configure OpenAI client for OpenRouter with minimal parameters
+        # Configure OpenAI client for OpenRouter with required headers
         try:
-            # Create httpx client explicitly to avoid any proxy issues
+            # Create httpx client with required headers for OpenRouter
             import httpx
+            
+            # OpenRouter requires specific headers
+            default_headers = {
+                "HTTP-Referer": "https://jobhunter-x.com",  # Your site URL
+                "X-Title": "Elite JobHunter X"  # Your app name
+            }
+            
             http_client = httpx.Client(
                 timeout=30.0,
-                limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
+                limits=httpx.Limits(max_keepalive_connections=5, max_connections=10),
+                headers=default_headers
             )
             
             self.client = openai.OpenAI(
@@ -29,11 +37,15 @@ class OpenRouterService:
             )
         except Exception as e:
             logger.error(f"Failed to initialize OpenAI client with custom httpx: {e}")
-            # Try without custom httpx client
+            # Try without custom httpx client but with default headers
             try:
                 self.client = openai.OpenAI(
                     api_key=self.api_key,
-                    base_url="https://openrouter.ai/api/v1"
+                    base_url="https://openrouter.ai/api/v1",
+                    default_headers={
+                        "HTTP-Referer": "https://jobhunter-x.com",
+                        "X-Title": "Elite JobHunter X"
+                    }
                 )
             except Exception as e2:
                 logger.error(f"Failed to initialize OpenAI client: {e2}")
