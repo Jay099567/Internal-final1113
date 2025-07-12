@@ -81,17 +81,126 @@ class Resume(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 
+class TailoringStrategy(str, Enum):
+    JOB_SPECIFIC = "job_specific"
+    COMPANY_SPECIFIC = "company_specific"
+    ROLE_SPECIFIC = "role_specific"
+    INDUSTRY_SPECIFIC = "industry_specific"
+    SKILL_FOCUSED = "skill_focused"
+    EXPERIENCE_FOCUSED = "experience_focused"
+
+
+class ResumeFormat(str, Enum):
+    PDF = "pdf"
+    DOCX = "docx"
+    TXT = "txt"
+    HTML = "html"
+
+
+class ATSOptimization(str, Enum):
+    BASIC = "basic"
+    ADVANCED = "advanced"
+    AGGRESSIVE = "aggressive"
+    STEALTH = "stealth"
+
+
 class ResumeVersion(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     candidate_id: str
     resume_id: str
     version_name: str
     tailored_for_job_id: Optional[str] = None
+    tailoring_strategy: TailoringStrategy = TailoringStrategy.JOB_SPECIFIC
+    ats_optimization_level: ATSOptimization = ATSOptimization.BASIC
     tailored_content: str
+    original_content: str
     keywords_injected: List[str] = []
+    keywords_optimized: List[str] = []
+    sections_modified: List[str] = []
     ats_score: Optional[float] = None
+    ats_breakdown: Optional[Dict[str, float]] = None
+    readability_score: Optional[float] = None
+    keyword_density: Optional[float] = None
     used_count: int = 0
     success_rate: Optional[float] = None
+    response_rate: Optional[float] = None
+    interview_rate: Optional[float] = None
+    generation_params: Dict[str, Any] = {}
+    stealth_fingerprint: Optional[str] = None
+    format: ResumeFormat = ResumeFormat.PDF
+    file_path: Optional[str] = None
+    file_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    is_active: bool = True
+
+
+class ResumeGeneticPool(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    candidate_id: str
+    job_id: str
+    generation: int = 1
+    population_size: int = 10
+    fitness_scores: List[float] = []
+    version_ids: List[str] = []
+    best_version_id: Optional[str] = None
+    mutation_rate: float = 0.1
+    crossover_rate: float = 0.7
+    selection_method: str = "tournament"
+    optimization_target: str = "ats_score"  # ats_score, response_rate, interview_rate
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    converged: bool = False
+
+
+class ATSAnalysis(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    resume_version_id: str
+    job_id: Optional[str] = None
+    overall_score: float
+    keyword_score: float
+    format_score: float
+    length_score: float
+    section_score: float
+    experience_score: float
+    education_score: float
+    skills_score: float
+    contact_score: float
+    recommendations: List[str] = []
+    missing_keywords: List[str] = []
+    keyword_frequency: Dict[str, int] = {}
+    section_analysis: Dict[str, Any] = {}
+    improvement_suggestions: List[str] = []
+    analyzed_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ResumePerformanceMetrics(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    resume_version_id: str
+    job_id: Optional[str] = None
+    applications_sent: int = 0
+    responses_received: int = 0
+    interviews_scheduled: int = 0
+    offers_received: int = 0
+    rejections_received: int = 0
+    response_rate: float = 0.0
+    interview_rate: float = 0.0
+    offer_rate: float = 0.0
+    avg_response_time_hours: Optional[float] = None
+    last_updated: datetime = Field(default_factory=datetime.utcnow)
+    tracking_period_days: int = 30
+
+
+class KeywordOptimization(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    resume_version_id: str
+    job_id: str
+    target_keywords: List[str] = []
+    injected_keywords: List[str] = []
+    keyword_positions: Dict[str, List[int]] = {}  # keyword -> list of positions
+    density_scores: Dict[str, float] = {}  # keyword -> density score
+    context_analysis: Dict[str, str] = {}  # keyword -> context it was placed in
+    optimization_strategy: str = "natural"  # natural, aggressive, stealth
+    effectiveness_score: Optional[float] = None
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
 
