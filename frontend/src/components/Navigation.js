@@ -50,6 +50,13 @@ const Navigation = () => {
       badge: "PHASE 4"
     },
     {
+      title: "Cover Letters",
+      icon: FileText,
+      path: "/cover-letters",
+      description: "AI Cover Letter Generation",
+      badge: "PHASE 5"
+    },
+    {
       title: "Jobs List",
       icon: BarChart3,
       path: "/jobs",
