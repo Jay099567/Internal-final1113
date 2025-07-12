@@ -13,19 +13,31 @@ class OpenRouterService:
         if not self.api_key:
             raise ValueError("OPENROUTER_API_KEY not found in environment variables")
         
-        # Configure OpenAI client for OpenRouter with explicit parameters
+        # Configure OpenAI client for OpenRouter with minimal parameters
         try:
+            # Create httpx client explicitly to avoid any proxy issues
+            import httpx
+            http_client = httpx.Client(
+                timeout=30.0,
+                limits=httpx.Limits(max_keepalive_connections=5, max_connections=10)
+            )
+            
             self.client = openai.OpenAI(
                 api_key=self.api_key,
-                base_url="https://openrouter.ai/api/v1"
+                base_url="https://openrouter.ai/api/v1",
+                http_client=http_client
             )
         except Exception as e:
-            logger.error(f"Failed to initialize OpenAI client: {e}")
-            # Fallback initialization without any optional parameters
-            self.client = openai.OpenAI(
-                api_key=self.api_key,
-                base_url="https://openrouter.ai/api/v1"
-            )
+            logger.error(f"Failed to initialize OpenAI client with custom httpx: {e}")
+            # Try without custom httpx client
+            try:
+                self.client = openai.OpenAI(
+                    api_key=self.api_key,
+                    base_url="https://openrouter.ai/api/v1"
+                )
+            except Exception as e2:
+                logger.error(f"Failed to initialize OpenAI client: {e2}")
+                raise e2
         
         # Model configurations for different tasks
         self.models = {
