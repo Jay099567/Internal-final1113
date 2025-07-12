@@ -10,6 +10,7 @@ import JobScraping from "./components/JobScraping";
 import JobsList from "./components/JobsList";
 import JobMatching from "./components/JobMatching";
 import ResumeTailoring from "./components/ResumeTailoring";
+import CoverLetterManagement from "./components/CoverLetterManagement";
 import Navigation from "./components/Navigation";
 
 function App() {
