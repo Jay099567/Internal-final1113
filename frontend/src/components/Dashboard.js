@@ -109,6 +109,22 @@ const Dashboard = () => {
       // Fetch scraping stats
       const scrapingResponse = await axios.get(`${API}/scraping/status`);
       
+      // Fetch resume tailoring stats
+      let tailoringStats = {
+        total_resume_versions: 0,
+        average_ats_score: 0,
+        total_genetic_pools: 0
+      };
+      
+      try {
+        const tailoringResponse = await axios.get(`${API}/resume-tailoring/stats`);
+        if (tailoringResponse.data.success) {
+          tailoringStats = tailoringResponse.data.stats;
+        }
+      } catch (tailoringError) {
+        console.warn("Resume tailoring stats not available:", tailoringError);
+      }
+      
       const combinedStats = {
         ...dashboardResponse.data,
         scraping: scrapingResponse.data.success ? scrapingResponse.data.stats : {
@@ -117,7 +133,8 @@ const Dashboard = () => {
           scheduled_jobs: 0,
           success_rate: 0,
           is_running: false
-        }
+        },
+        tailoring: tailoringStats
       };
       
       setStats(combinedStats);
