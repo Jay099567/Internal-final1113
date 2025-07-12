@@ -1367,6 +1367,7 @@ async def download_cover_letter_pdf(cover_letter_id: str):
             raise HTTPException(status_code=404, detail="PDF file not found")
         
         from fastapi.responses import FileResponse
+        import os
         return FileResponse(
             path=pdf_url,
             media_type='application/pdf',
