@@ -99,7 +99,7 @@ class CompanyResearchEngine:
                 "awards": [],
                 "sentiment_score": 0.0,
                 "key_initiatives": [],
-                "research_timestamp": datetime.utcnow(),
+                "research_timestamp": datetime.utcnow().isoformat(),
                 "research_sources": []
             }
             
