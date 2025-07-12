@@ -43,6 +43,13 @@ const Navigation = () => {
       badge: "NEW"
     },
     {
+      title: "Resume Tailoring",
+      icon: Settings,
+      path: "/resume-tailoring",
+      description: "AI Resume Optimization",
+      badge: "PHASE 4"
+    },
+    {
       title: "Jobs List",
       icon: BarChart3,
       path: "/jobs",
