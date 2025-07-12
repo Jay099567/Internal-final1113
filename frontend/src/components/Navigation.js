@@ -135,6 +135,11 @@ const Navigation = () => {
               <span className="ml-auto bg-green-500 w-2 h-2 rounded-full"></span>
             </div>
             <div className="flex items-center space-x-3 px-4 py-2 text-slate-400 text-sm">
+              <Settings className="w-4 h-4" />
+              <span>Resume Tailoring</span>
+              <span className="ml-auto bg-green-500 w-2 h-2 rounded-full"></span>
+            </div>
+            <div className="flex items-center space-x-3 px-4 py-2 text-slate-400 text-sm">
               <Send className="w-4 h-4" />
               <span>Auto Apply</span>
               <span className="ml-auto bg-yellow-500 w-2 h-2 rounded-full"></span>
