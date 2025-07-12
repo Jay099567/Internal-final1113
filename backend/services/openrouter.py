@@ -13,11 +13,19 @@ class OpenRouterService:
         if not self.api_key:
             raise ValueError("OPENROUTER_API_KEY not found in environment variables")
         
-        # Configure OpenAI client for OpenRouter
-        self.client = openai.OpenAI(
-            api_key=self.api_key,
-            base_url="https://openrouter.ai/api/v1",
-        )
+        # Configure OpenAI client for OpenRouter with explicit parameters
+        try:
+            self.client = openai.OpenAI(
+                api_key=self.api_key,
+                base_url="https://openrouter.ai/api/v1"
+            )
+        except Exception as e:
+            logger.error(f"Failed to initialize OpenAI client: {e}")
+            # Fallback initialization without any optional parameters
+            self.client = openai.OpenAI(
+                api_key=self.api_key,
+                base_url="https://openrouter.ai/api/v1"
+            )
         
         # Model configurations for different tasks
         self.models = {
