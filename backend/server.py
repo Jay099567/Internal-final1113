@@ -880,6 +880,310 @@ async def restart_scheduler():
         logger.error(f"Failed to restart scheduler: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to restart scheduler: {str(e)}")
 
+
+# ================================================================================
+# RESUME TAILORING ENDPOINTS - Phase 4: Advanced Resume Tailoring
+# ================================================================================
+
+class ResumeTailoringRequest(BaseModel):
+    candidate_id: str
+    resume_id: str
+    job_id: str
+    job_description: str
+    strategy: TailoringStrategy = TailoringStrategy.JOB_SPECIFIC
+    optimization_level: ATSOptimization = ATSOptimization.ADVANCED
+    use_genetic_algorithm: bool = True
+
+class ResumeVariantsRequest(BaseModel):
+    candidate_id: str
+    resume_id: str
+    count: int = Field(default=5, ge=1, le=10)
+    strategies: Optional[List[TailoringStrategy]] = None
+
+@api_router.post("/resumes/{resume_id}/tailor")
+async def tailor_resume_for_job(resume_id: str, request: ResumeTailoringRequest):
+    """Tailor resume for specific job using advanced AI and genetic algorithms"""
+    try:
+        tailoring_service = get_resume_tailoring_service(db)
+        
+        tailored_resume = await tailoring_service.tailor_resume_for_job(
+            candidate_id=request.candidate_id,
+            resume_id=resume_id,
+            job_id=request.job_id,
+            job_description=request.job_description,
+            strategy=request.strategy,
+            optimization_level=request.optimization_level,
+            use_genetic_algorithm=request.use_genetic_algorithm
+        )
+        
+        return {
+            "success": True,
+            "message": "Resume tailored successfully",
+            "resume_version": tailored_resume.dict(),
+            "ats_score": tailored_resume.ats_score,
+            "strategy": request.strategy.value,
+            "optimization_level": request.optimization_level.value
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to tailor resume: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to tailor resume: {str(e)}")
+
+@api_router.get("/candidates/{candidate_id}/resume-versions")
+async def get_candidate_resume_versions(
+    candidate_id: str,
+    job_id: Optional[str] = Query(None, description="Filter by job ID")
+):
+    """Get all resume versions for a candidate"""
+    try:
+        tailoring_service = get_resume_tailoring_service(db)
+        versions = await tailoring_service.get_resume_versions(candidate_id, job_id)
+        
+        return {
+            "success": True,
+            "versions": [version.dict() for version in versions],
+            "total": len(versions)
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get resume versions: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get resume versions: {str(e)}")
+
+@api_router.post("/resumes/{resume_id}/generate-variants")
+async def generate_resume_variants(resume_id: str, request: ResumeVariantsRequest):
+    """Generate multiple resume variants for A/B testing"""
+    try:
+        tailoring_service = get_resume_tailoring_service(db)
+        
+        variants = await tailoring_service.generate_resume_variants(
+            candidate_id=request.candidate_id,
+            resume_id=resume_id,
+            count=request.count,
+            strategies=request.strategies
+        )
+        
+        return {
+            "success": True,
+            "message": f"Generated {len(variants)} resume variants",
+            "variants": [variant.dict() for variant in variants],
+            "strategies_used": [variant.tailoring_strategy.value for variant in variants]
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to generate resume variants: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate resume variants: {str(e)}")
+
+@api_router.get("/resume-versions/{version_id}/ats-analysis")
+async def get_ats_analysis(version_id: str):
+    """Get ATS analysis for a resume version"""
+    try:
+        tailoring_service = get_resume_tailoring_service(db)
+        analysis = await tailoring_service.get_ats_analysis(version_id)
+        
+        if not analysis:
+            raise HTTPException(status_code=404, detail="ATS analysis not found")
+        
+        return {
+            "success": True,
+            "analysis": analysis.dict()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get ATS analysis: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get ATS analysis: {str(e)}")
+
+@api_router.get("/resume-versions/{version_id}/performance")
+async def get_resume_performance(version_id: str):
+    """Get performance metrics for a resume version"""
+    try:
+        tailoring_service = get_resume_tailoring_service(db)
+        metrics = await tailoring_service.get_performance_metrics(version_id)
+        
+        if not metrics:
+            raise HTTPException(status_code=404, detail="Performance metrics not found")
+        
+        return {
+            "success": True,
+            "metrics": metrics.dict()
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to get performance metrics: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get performance metrics: {str(e)}")
+
+@api_router.post("/resume-versions/{version_id}/update-performance")
+async def update_resume_performance(
+    version_id: str,
+    applications_sent: Optional[int] = None,
+    responses_received: Optional[int] = None,
+    interviews_scheduled: Optional[int] = None,
+    offers_received: Optional[int] = None,
+    rejections_received: Optional[int] = None
+):
+    """Update performance metrics for a resume version"""
+    try:
+        tailoring_service = get_resume_tailoring_service(db)
+        
+        await tailoring_service.update_performance_metrics(
+            resume_version_id=version_id,
+            applications_sent=applications_sent,
+            responses_received=responses_received,
+            interviews_scheduled=interviews_scheduled,
+            offers_received=offers_received,
+            rejections_received=rejections_received
+        )
+        
+        return {
+            "success": True,
+            "message": "Performance metrics updated successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to update performance metrics: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update performance metrics: {str(e)}")
+
+@api_router.get("/candidates/{candidate_id}/resume-performance")
+async def analyze_candidate_resume_performance(candidate_id: str):
+    """Analyze overall resume performance for a candidate"""
+    try:
+        tailoring_service = get_resume_tailoring_service(db)
+        analysis = await tailoring_service.analyze_resume_performance(candidate_id)
+        
+        return {
+            "success": True,
+            "analysis": analysis
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to analyze resume performance: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to analyze resume performance: {str(e)}")
+
+@api_router.post("/resumes/test-ats-scoring")
+async def test_ats_scoring():
+    """Test ATS scoring engine with sample data"""
+    try:
+        tailoring_service = get_resume_tailoring_service(db)
+        
+        sample_resume = """
+John Doe
+Software Engineer
+john.doe@email.com | (555) 123-4567 | LinkedIn: linkedin.com/in/johndoe
+
+PROFESSIONAL SUMMARY
+Experienced software engineer with 5+ years developing scalable web applications using Python, React, and AWS.
+
+EXPERIENCE
+Senior Software Engineer | Tech Company | 2020-2024
+• Developed and maintained 15+ microservices handling 1M+ daily requests
+• Led team of 4 engineers and improved deployment efficiency by 40%
+• Implemented CI/CD pipelines reducing deployment time from 2 hours to 15 minutes
+
+Software Engineer | StartupCorp | 2018-2020
+• Built REST APIs serving 100K+ users using Python and Django
+• Optimized database queries improving application performance by 60%
+
+EDUCATION
+Bachelor of Computer Science | University of Technology | 2018
+
+SKILLS
+Python, JavaScript, React, AWS, Docker, Kubernetes, SQL, MongoDB
+"""
+        
+        sample_job = """
+We are looking for a Senior Python Developer to join our team.
+Requirements: 5+ years Python experience, React, AWS, Docker, Kubernetes
+Strong experience with microservices and API development
+"""
+        
+        analysis = tailoring_service.ats_engine.calculate_ats_score(sample_resume, sample_job)
+        
+        return {
+            "success": True,
+            "message": "ATS scoring test completed",
+            "sample_resume_score": analysis.overall_score,
+            "breakdown": {
+                "keyword_score": analysis.keyword_score,
+                "format_score": analysis.format_score,
+                "section_score": analysis.section_score,
+                "experience_score": analysis.experience_score,
+                "education_score": analysis.education_score,
+                "skills_score": analysis.skills_score,
+                "contact_score": analysis.contact_score
+            },
+            "recommendations": analysis.recommendations,
+            "missing_keywords": analysis.missing_keywords
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to test ATS scoring: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to test ATS scoring: {str(e)}")
+
+@api_router.get("/resume-tailoring/stats")
+async def get_resume_tailoring_stats():
+    """Get resume tailoring system statistics"""
+    try:
+        # Get counts from different collections
+        total_versions = await db.resume_versions.count_documents({})
+        total_genetic_pools = await db.resume_genetic_pools.count_documents({})
+        total_ats_analyses = await db.ats_analyses.count_documents({})
+        total_performance_metrics = await db.resume_performance_metrics.count_documents({})
+        
+        # Get recent activity
+        recent_versions = await db.resume_versions.find({}).sort([('created_at', -1)]).limit(5).to_list(length=5)
+        
+        # Calculate average scores
+        pipeline = [
+            {"$match": {"ats_score": {"$exists": True, "$ne": None}}},
+            {"$group": {
+                "_id": None,
+                "avg_ats_score": {"$avg": "$ats_score"},
+                "max_ats_score": {"$max": "$ats_score"},
+                "min_ats_score": {"$min": "$ats_score"}
+            }}
+        ]
+        
+        score_stats = await db.resume_versions.aggregate(pipeline).to_list(length=1)
+        avg_scores = score_stats[0] if score_stats else {
+            "avg_ats_score": 0,
+            "max_ats_score": 0,
+            "min_ats_score": 0
+        }
+        
+        return {
+            "success": True,
+            "stats": {
+                "total_resume_versions": total_versions,
+                "total_genetic_pools": total_genetic_pools,
+                "total_ats_analyses": total_ats_analyses,
+                "total_performance_metrics": total_performance_metrics,
+                "average_ats_score": round(avg_scores["avg_ats_score"], 2),
+                "max_ats_score": round(avg_scores["max_ats_score"], 2),
+                "min_ats_score": round(avg_scores["min_ats_score"], 2)
+            },
+            "recent_activity": [
+                {
+                    "version_name": version.get("version_name"),
+                    "strategy": version.get("tailoring_strategy"),
+                    "ats_score": version.get("ats_score"),
+                    "created_at": version.get("created_at")
+                }
+                for version in recent_versions
+            ]
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get resume tailoring stats: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to get resume tailoring stats: {str(e)}")
+
+
+# ================================================================================
+# END RESUME TAILORING ENDPOINTS
+# ================================================================================
+
 # Include the router in the main app
 app.include_router(api_router)
 
