@@ -28,6 +28,7 @@ function App() {
               <Route path="/jobs" element={<JobsList />} />
               <Route path="/matching" element={<JobMatching />} />
               <Route path="/resume-tailoring" element={<ResumeTailoring />} />
+              <Route path="/cover-letters" element={<CoverLetterManagement />} />
               <Route path="/test-ai" element={<TestAI />} />
             </Routes>
           </main>
