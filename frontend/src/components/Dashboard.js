@@ -501,7 +501,7 @@ const Dashboard = () => {
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Link
             to="/candidates/new"
             className="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-colors"
@@ -509,6 +509,15 @@ const Dashboard = () => {
             <Plus className="w-8 h-8 text-blue-600 mb-2" />
             <h3 className="font-medium text-gray-900">Add Candidate</h3>
             <p className="text-sm text-gray-600">Onboard a new job seeker</p>
+          </Link>
+          
+          <Link
+            to="/resume-tailoring"
+            className="p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:bg-green-50 transition-colors"
+          >
+            <Activity className="w-8 h-8 text-green-600 mb-2" />
+            <h3 className="font-medium text-gray-900">Resume Tailoring</h3>
+            <p className="text-sm text-gray-600">AI-powered resume optimization</p>
           </Link>
           
           <Link
