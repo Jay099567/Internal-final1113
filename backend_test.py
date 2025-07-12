@@ -13,7 +13,7 @@ import asyncio
 from datetime import datetime
 
 # Get backend URL from environment
-BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://f9bd5e31-4f5c-459c-af8c-ef4f8a57958e.preview.emergentagent.com')
+BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://475e92e1-119b-4461-bb05-1b93baa96c3f.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
 class TestAdvancedCoverLetterSystem(unittest.TestCase):
