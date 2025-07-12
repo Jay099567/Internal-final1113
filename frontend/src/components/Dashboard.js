@@ -446,6 +446,58 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Resume Tailoring Statistics */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900">🧬 Resume Tailoring Engine</h2>
+              <p className="text-sm text-gray-600 mt-1">AI-powered resume optimization with genetic algorithms</p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-3 h-3 rounded-full bg-green-500"></div>
+              <span className="text-sm font-medium text-gray-700">Advanced AI Active</span>
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">{stats.tailoring?.total_resume_versions || 0}</div>
+              <div className="text-sm text-gray-600">Resume Versions</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{stats.tailoring?.average_ats_score || 0}</div>
+              <div className="text-sm text-gray-600">Avg ATS Score</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">{stats.tailoring?.total_genetic_pools || 0}</div>
+              <div className="text-sm text-gray-600">Genetic Pools</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-yellow-600">{stats.tailoring?.total_ats_analyses || 0}</div>
+              <div className="text-sm text-gray-600">ATS Analyses</div>
+            </div>
+          </div>
+          <div className="mt-6 flex space-x-4">
+            <Link
+              to="/resume-tailoring"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+            >
+              <Activity className="w-4 h-4 mr-2" />
+              Tailor Resumes
+            </Link>
+            <Link
+              to="/resume-tailoring"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              <Brain className="w-4 h-4 mr-2" />
+              View Analytics
+            </Link>
+          </div>
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
