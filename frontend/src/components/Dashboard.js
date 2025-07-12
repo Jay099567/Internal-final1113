@@ -9,7 +9,8 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
-  Plus
+  Plus,
+  BarChart3
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
