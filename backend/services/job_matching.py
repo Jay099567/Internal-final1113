@@ -17,7 +17,7 @@ from pymongo import MongoClient
 import os
 
 from .openrouter import get_openrouter_service
-from ..models import JobFiltered, Priority
+from models import JobFiltered, Priority
 
 logger = logging.getLogger(__name__)
 
