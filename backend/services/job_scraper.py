@@ -72,8 +72,8 @@ class StealthScrapingConfig:
         ]
         
         self.proxy_list = [
-            os.environ.get('PROXY_HTTP', 'http://104.27.45.90:80'),
-            # Add more proxies as needed
+            os.environ.get('PROXY_HTTP', 'http://scraperapi:96cecbd116adda96dc39068f02225537@proxy-server.scraperapi.com:8001'),
+            # ScraperAPI proxy configuration
         ]
         
         self.delay_range = (
