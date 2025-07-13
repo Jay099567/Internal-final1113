@@ -2041,7 +2041,8 @@ asyncio.create_task(application_submission_manager.process_submission_queue())
 # from services.outreach_manager import OutreachCampaignManager
 # Temporarily disabled due to import issues
 # from services.recruiter_research import RecruiterResearchService
-from services.linkedin_automation import LinkedInAutomation
+# Temporarily disabled due to import issues
+# from services.linkedin_automation import LinkedInAutomation
 
 # Initialize outreach services
 # Temporarily disabled due to import issues
