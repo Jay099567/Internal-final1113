@@ -245,9 +245,59 @@ const Dashboard = () => {
           color="blue"
         />
         <StatCard
-          title="Resumes Processed"
-          value={stats.total_resumes}
-          icon={FileText}
+          title="Jobs Scraped"
+          value={stats.total_jobs}
+          icon={Search}
+          trend="+156 today"
+          color="green"
+        />
+        <StatCard
+          title="Job Matches"
+          value={stats.total_matches}
+          icon={Target}
+          trend="+24 new matches"
+          color="purple"
+        />
+        <StatCard
+          title="Applications Submitted"
+          value={stats.total_applications || 0}
+          icon={Send}
+          trend="+8 today"
+          color="orange"
+        />
+      </div>
+
+      {/* Phase 6: Application Submission Status */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Application Submission Engine</h2>
+          <Link
+            to="/application-submission"
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            View Details →
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">{stats.applications_pending || 0}</div>
+            <div className="text-sm text-gray-600">In Queue</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">{stats.applications_successful || 0}</div>
+            <div className="text-sm text-gray-600">Successful</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-yellow-600">{stats.applications_active || 0}</div>
+            <div className="text-sm text-gray-600">Active</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-purple-600">{stats.applications_today || 0}</div>
+            <div className="text-sm text-gray-600">Today</div>
+          </div>
+        </div>
+      </div>
           trend="+8 new this week"
           color="green"
         />
