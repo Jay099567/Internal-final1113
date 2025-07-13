@@ -247,13 +247,7 @@ Python, JavaScript, React, Django, FastAPI, AWS, Docker, Kubernetes, PostgreSQL,
             
             # Test cover letter generation endpoint
             response = requests.post(
-                f"{API_BASE}/ai/test/cover-letter",
-                json={
-                    "candidate_id": self.test_candidate_id,
-                    "job_description": sample_job_description,
-                    "company_name": "TechCorp Innovation",
-                    "tone": "professional"
-                },
+                f"{API_BASE}/ai/test/cover-letter?candidate_id={self.test_candidate_id}&job_description={requests.utils.quote(sample_job_description)}&company_name=TechCorp%20Innovation&tone=professional",
                 timeout=60
             )
             
