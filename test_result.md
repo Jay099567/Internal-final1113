@@ -194,15 +194,18 @@ backend:
 
   - task: "AI Testing Endpoints"
     implemented: true
-    working: true
+    working: false
     file: "server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Implemented AI testing endpoints for job matching and cover letter generation to validate OpenRouter integration and AI capabilities."
+      - working: false
+        agent: "testing"
+        comment: "ISSUE IDENTIFIED: ❌ AI Testing Endpoints experiencing OpenRouter API authentication failures (500 errors). Endpoint structure is correct but OpenRouter service calls are failing due to API key authentication issues. Core functionality blocked by OpenRouter API key problems."
 
   - task: "Dashboard Analytics API"
     implemented: true
