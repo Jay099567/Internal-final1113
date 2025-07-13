@@ -1,0 +1,26 @@
+
+Emma Rodriguez
+Senior Software Engineer
+emma.rodriguez@example.com | (555) 123-4567 | Austin, TX
+LinkedIn: linkedin.com/in/emmarodriguez | GitHub: github.com/emmarodriguez
+
+PROFESSIONAL SUMMARY
+Experienced software engineer with 5+ years developing scalable web applications using Python, JavaScript, and cloud technologies.
+
+EXPERIENCE
+Senior Software Engineer | TechCorp Inc. | 2020-2024
+• Developed and maintained 20+ microservices handling 2M+ daily requests using Python and Django
+• Led team of 5 engineers and improved deployment efficiency by 50%
+• Implemented CI/CD pipelines reducing deployment time from 3 hours to 20 minutes
+• Built REST APIs serving 500K+ users using FastAPI and PostgreSQL
+
+Software Engineer | StartupCorp | 2018-2020
+• Built full-stack web applications using React, Node.js, and MongoDB
+• Optimized database queries improving application performance by 40%
+• Implemented automated testing reducing bugs by 60%
+
+EDUCATION
+Bachelor of Computer Science | University of Texas at Austin | 2018
+
+SKILLS
+Python, JavaScript, React, Django, FastAPI, AWS, Docker, Kubernetes, PostgreSQL, MongoDB, Git, CI/CD
