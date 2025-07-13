@@ -2047,7 +2047,8 @@ asyncio.create_task(application_submission_manager.process_submission_queue())
 # Initialize outreach services
 # Temporarily disabled due to import issues
 # outreach_manager = OutreachCampaignManager(client)
-recruiter_research_service = RecruiterResearchService(client)
+# Temporarily disabled due to import issues
+# recruiter_research_service = RecruiterResearchService(client)
 
 # Request models for outreach
 class RecruiterCreateRequest(BaseModel):
