@@ -23,6 +23,7 @@ from services.resume_parser import resume_service
 from services.scheduler import get_scheduler, create_custom_schedule
 from services.job_matching import get_job_matching_service
 from services.resume_tailoring import get_resume_tailoring_service
+from services.application_submission import ApplicationSubmissionManager, ApplicationSubmissionConfig, ApplicationMethod, ApplicationResult
 
 
 ROOT_DIR = Path(__file__).parent
