@@ -16,6 +16,459 @@ from datetime import datetime
 BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://5fbc6a8e-bf20-48c9-8981-eee9f33917cd.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
+class TestApplicationSubmissionSystem(unittest.TestCase):
+    """Test suite for Phase 6 Application Submission system"""
+    
+    @classmethod
+    def setUpClass(cls):
+        """Set up test data"""
+        cls.test_candidate_id = None
+        cls.test_job_id = None
+        cls.test_resume_version_id = None
+        cls.test_cover_letter_id = None
+        cls.test_application_id = None
+        
+        # Create test data
+        cls._create_test_data()
+    
+    @classmethod
+    def _create_test_data(cls):
+        """Create test candidate, job, resume, and cover letter for application testing"""
+        try:
+            # Create test candidate
+            candidate_data = {
+                "full_name": "Michael Johnson",
+                "email": "michael.johnson@example.com",
+                "phone": "+1-555-0188",
+                "location": "Austin, TX",
+                "linkedin_url": "https://linkedin.com/in/michaeljohnson",
+                "target_roles": ["Software Engineer", "Full Stack Developer"],
+                "target_locations": ["Austin", "Remote"],
+                "salary_min": 100000,
+                "salary_max": 150000,
+                "years_experience": 4,
+                "skills": ["Python", "JavaScript", "React", "Node.js", "AWS"]
+            }
+            
+            response = requests.post(f"{API_BASE}/candidates", json=candidate_data, timeout=30)
+            if response.status_code == 200:
+                cls.test_candidate_id = response.json()["id"]
+                print(f"✅ Created test candidate for applications: {cls.test_candidate_id}")
+            else:
+                print(f"❌ Failed to create test candidate: {response.status_code}")
+                
+        except Exception as e:
+            print(f"❌ Error creating test data: {e}")
+    
+    def test_01_application_submission_service_structure(self):
+        """Test the application submission service structure and components"""
+        try:
+            with open('/app/backend/services/application_submission.py', 'r') as f:
+                submission_code = f.read()
+                
+            # Check for key service classes
+            self.assertIn('class ApplicationSubmissionManager', submission_code)
+            self.assertIn('class ApplicationSubmissionEngine', submission_code)
+            self.assertIn('class HumanBehaviorSimulator', submission_code)
+            self.assertIn('class FingerprintRandomizer', submission_code)
+            
+            # Check application methods enum
+            self.assertIn('class ApplicationMethod(str, Enum)', submission_code)
+            self.assertIn('DIRECT_FORM = "direct_form"', submission_code)
+            self.assertIn('EMAIL_APPLY = "email_apply"', submission_code)
+            self.assertIn('INDEED_QUICK = "indeed_quick"', submission_code)
+            self.assertIn('LINKEDIN_EASY = "linkedin_easy"', submission_code)
+            
+            # Check submission engine methods
+            self.assertIn('async def submit_application', submission_code)
+            self.assertIn('async def _submit_direct_form', submission_code)
+            self.assertIn('async def _submit_email_apply', submission_code)
+            self.assertIn('async def _submit_indeed_quick', submission_code)
+            
+            # Check stealth features
+            self.assertIn('async def human_type', submission_code)
+            self.assertIn('async def human_click', submission_code)
+            self.assertIn('async def human_scroll', submission_code)
+            self.assertIn('def generate_fingerprint', submission_code)
+            
+            print("✅ Application submission service has all required components")
+            
+        except Exception as e:
+            self.fail(f"Failed to verify application submission service structure: {e}")
+    
+    def test_02_application_database_models(self):
+        """Test application database models"""
+        try:
+            with open('/app/backend/models.py', 'r') as f:
+                models_code = f.read()
+                
+            # Check for application models
+            self.assertIn('class Application(BaseModel)', models_code)
+            self.assertIn('class ApplicationStatus(str, Enum)', models_code)
+            
+            # Check ApplicationStatus enum values
+            status_values = ['PENDING = "pending"', 'APPLIED = "applied"', 'REVIEWING = "reviewing"', 
+                           'INTERVIEWED = "interviewed"', 'REJECTED = "rejected"', 'OFFERED = "offered"', 'ACCEPTED = "accepted"']
+            for status in status_values:
+                self.assertIn(status, models_code)
+            
+            # Check Application model fields
+            application_fields = [
+                'candidate_id: str',
+                'job_id: str',
+                'job_raw_id: str',
+                'resume_version_id: str',
+                'cover_letter_id: Optional[str]',
+                'stealth_settings_id: str',
+                'job_board: str',
+                'company: str',
+                'position: str',
+                'application_url: Optional[str]',
+                'status: ApplicationStatus',
+                'applied_at: Optional[datetime]',
+                'tracking_pixel_id: Optional[str]',
+                'utm_params: Optional[Dict[str, str]]'
+            ]
+            
+            for field in application_fields:
+                self.assertIn(field, models_code)
+            
+            print("✅ Application database models are properly defined")
+            
+        except Exception as e:
+            self.fail(f"Failed to verify application database models: {e}")
+    
+    def test_03_application_api_endpoints(self):
+        """Test application API endpoints structure"""
+        try:
+            with open('/app/backend/server.py', 'r') as f:
+                server_code = f.read()
+                
+            # Check for application endpoints
+            endpoints = [
+                '@api_router.post("/applications/submit")',
+                '@api_router.post("/applications/submit-bulk")',
+                '@api_router.get("/applications/status")',
+                '@api_router.get("/applications/{application_id}")',
+                '@api_router.get("/applications/candidate/{candidate_id}")',
+                '@api_router.post("/applications/auto-submit")',
+                '@api_router.get("/applications/analytics")',
+                '@api_router.post("/applications/test-submission")'
+            ]
+            
+            for endpoint in endpoints:
+                self.assertIn(endpoint, server_code)
+            
+            # Check for request models
+            self.assertIn('class ApplicationSubmissionRequest(BaseModel)', server_code)
+            self.assertIn('class BulkApplicationSubmissionRequest(BaseModel)', server_code)
+            
+            # Check for application submission manager
+            self.assertIn('application_submission_manager = ApplicationSubmissionManager', server_code)
+            
+            print("✅ All application API endpoints are properly defined")
+            
+        except Exception as e:
+            self.fail(f"Failed to verify application API endpoints: {e}")
+    
+    def test_04_dependencies_verification(self):
+        """Test that all required dependencies for application submission are available"""
+        try:
+            # Check requirements.txt for new dependencies
+            with open('/app/backend/requirements.txt', 'r') as f:
+                requirements = f.read()
+            
+            required_packages = [
+                'playwright',
+                'playwright-stealth',
+                'selenium',
+                'undetected-chromedriver',
+                'fake-useragent',
+                'asyncio-throttle',
+                'opencv-python',
+                'pillow'
+            ]
+            
+            for package in required_packages:
+                self.assertIn(package, requirements)
+            
+            print("✅ All required application submission dependencies are listed in requirements.txt")
+            
+        except Exception as e:
+            self.fail(f"Application submission dependencies verification failed: {e}")
+    
+    def test_05_health_check(self):
+        """Test basic health check"""
+        try:
+            response = requests.get(f"{API_BASE}/health", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertIn("status", data)
+            self.assertEqual(data["status"], "healthy")
+            
+            print("✅ Health check endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Health check failed: {e}")
+    
+    def test_06_application_status_endpoint(self):
+        """Test application status endpoint"""
+        try:
+            response = requests.get(f"{API_BASE}/applications/status", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("statistics", data)
+            self.assertIn("timestamp", data)
+            
+            stats = data["statistics"]
+            self.assertIn("total_applications", stats)
+            self.assertIn("successful_applications", stats)
+            self.assertIn("pending_applications", stats)
+            self.assertIn("failed_applications", stats)
+            self.assertIn("applications_today", stats)
+            self.assertIn("queue_size", stats)
+            self.assertIn("active_submissions", stats)
+            
+            print("✅ Application status endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Application status endpoint test failed: {e}")
+    
+    def test_07_application_analytics_endpoint(self):
+        """Test application analytics endpoint"""
+        try:
+            response = requests.get(f"{API_BASE}/applications/analytics", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("analytics", data)
+            self.assertIn("timestamp", data)
+            
+            analytics = data["analytics"]
+            self.assertIn("overall_stats", analytics)
+            self.assertIn("applications_by_method", analytics)
+            self.assertIn("daily_applications", analytics)
+            self.assertIn("top_companies", analytics)
+            
+            overall_stats = analytics["overall_stats"]
+            self.assertIn("total_applications", overall_stats)
+            self.assertIn("successful_applications", overall_stats)
+            self.assertIn("success_rate", overall_stats)
+            self.assertIn("response_rate", overall_stats)
+            
+            print("✅ Application analytics endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Application analytics endpoint test failed: {e}")
+    
+    def test_08_application_test_submission(self):
+        """Test application submission with test data"""
+        try:
+            response = requests.post(f"{API_BASE}/applications/test-submission", timeout=120)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("test_result", data)
+            self.assertIn("timestamp", data)
+            
+            test_result = data["test_result"]
+            self.assertIn("application_id", test_result)
+            self.assertIn("success", test_result)
+            self.assertIn("method", test_result)
+            self.assertIn("submission_time", test_result)
+            
+            # Store for later tests
+            self.__class__.test_application_id = test_result["application_id"]
+            
+            print(f"✅ Application test submission working - Method: {test_result['method']}")
+            
+        except Exception as e:
+            self.fail(f"Application test submission failed: {e}")
+    
+    def test_09_stealth_features_implementation(self):
+        """Test stealth features implementation"""
+        try:
+            with open('/app/backend/services/application_submission.py', 'r') as f:
+                submission_code = f.read()
+            
+            # Check human behavior simulation
+            self.assertIn('class HumanBehaviorSimulator', submission_code)
+            self.assertIn('async def human_type', submission_code)
+            self.assertIn('async def human_click', submission_code)
+            self.assertIn('async def human_mouse_move', submission_code)
+            self.assertIn('async def human_scroll', submission_code)
+            self.assertIn('async def random_page_interaction', submission_code)
+            
+            # Check fingerprint randomization
+            self.assertIn('class FingerprintRandomizer', submission_code)
+            self.assertIn('def generate_fingerprint', submission_code)
+            self.assertIn('async def apply_fingerprint', submission_code)
+            
+            # Check stealth configuration
+            self.assertIn('stealth_mode: bool = True', submission_code)
+            self.assertIn('human_behavior: bool = True', submission_code)
+            self.assertIn('fingerprint_randomization: bool = True', submission_code)
+            
+            # Check browser stealth features
+            self.assertIn('from playwright_stealth import stealth_async', submission_code)
+            self.assertIn('--disable-blink-features=AutomationControlled', submission_code)
+            self.assertIn('await stealth_async(page)', submission_code)
+            
+            print("✅ Stealth features are properly implemented")
+            
+        except Exception as e:
+            self.fail(f"Stealth features test failed: {e}")
+    
+    def test_10_browser_automation_components(self):
+        """Test browser automation components"""
+        try:
+            with open('/app/backend/services/application_submission.py', 'r') as f:
+                submission_code = f.read()
+            
+            # Check browser automation imports
+            self.assertIn('from playwright.async_api import async_playwright', submission_code)
+            self.assertIn('from selenium import webdriver', submission_code)
+            self.assertIn('import undetected_chromedriver as uc', submission_code)
+            
+            # Check form detection and filling
+            self.assertIn('async def _detect_application_form', submission_code)
+            self.assertIn('async def _fill_application_form', submission_code)
+            self.assertIn('async def _submit_application_form', submission_code)
+            
+            # Check Indeed-specific handling
+            self.assertIn('async def _handle_indeed_application_flow', submission_code)
+            self.assertIn('async def _fill_indeed_personal_info', submission_code)
+            self.assertIn('async def _handle_indeed_resume_upload', submission_code)
+            self.assertIn('async def _handle_indeed_cover_letter', submission_code)
+            
+            print("✅ Browser automation components are properly implemented")
+            
+        except Exception as e:
+            self.fail(f"Browser automation components test failed: {e}")
+    
+    def test_11_tracking_and_utm_features(self):
+        """Test tracking pixel and UTM parameter generation"""
+        try:
+            with open('/app/backend/services/application_submission.py', 'r') as f:
+                submission_code = f.read()
+            
+            # Check tracking pixel generation
+            self.assertIn('async def _generate_tracking_pixel', submission_code)
+            self.assertIn('def _generate_utm_params', submission_code)
+            
+            # Check UTM parameters
+            self.assertIn("'utm_source': source", submission_code)
+            self.assertIn("'utm_medium': 'job_application'", submission_code)
+            self.assertIn("'utm_campaign': 'elite_jobhunter_x'", submission_code)
+            self.assertIn("'utm_content': application_id", submission_code)
+            self.assertIn("'utm_term': 'automated_application'", submission_code)
+            
+            # Check tracking pixel URL generation
+            self.assertIn('tracking_url = f"https://track.jobhunter-x.com/pixel/{application_id}.png"', submission_code)
+            
+            print("✅ Tracking and UTM features are properly implemented")
+            
+        except Exception as e:
+            self.fail(f"Tracking and UTM features test failed: {e}")
+    
+    def test_12_email_alias_generation(self):
+        """Test email alias generation for applications"""
+        try:
+            with open('/app/backend/services/application_submission.py', 'r') as f:
+                submission_code = f.read()
+            
+            # Check email alias generation patterns
+            self.assertIn('email_alias = f"{candidate.email.split(\'@\')[0]}+job-{', submission_code)
+            self.assertIn('email_alias = f"{candidate.email.split(\'@\')[0]}+indeed-{', submission_code)
+            
+            # Check email alias rotation configuration
+            self.assertIn('email_alias_rotation: bool = True', submission_code)
+            
+            print("✅ Email alias generation is properly implemented")
+            
+        except Exception as e:
+            self.fail(f"Email alias generation test failed: {e}")
+    
+    def test_13_error_handling_and_screenshots(self):
+        """Test error handling and screenshot capture"""
+        try:
+            with open('/app/backend/services/application_submission.py', 'r') as f:
+                submission_code = f.read()
+            
+            # Check error handling
+            self.assertIn('except Exception as e:', submission_code)
+            self.assertIn('logger.error(f"Application submission failed: {str(e)}")', submission_code)
+            self.assertIn('error_message=str(e)', submission_code)
+            
+            # Check screenshot capture
+            self.assertIn('screenshot_on_error: bool = True', submission_code)
+            self.assertIn('screenshot = await page.screenshot()', submission_code)
+            self.assertIn('screenshots.append(base64.b64encode(screenshot).decode())', submission_code)
+            
+            # Check retry mechanisms
+            self.assertIn('max_retry_attempts: int = 3', submission_code)
+            
+            print("✅ Error handling and screenshot features are properly implemented")
+            
+        except Exception as e:
+            self.fail(f"Error handling and screenshots test failed: {e}")
+    
+    def test_14_queue_processing_system(self):
+        """Test application queue processing system"""
+        try:
+            with open('/app/backend/services/application_submission.py', 'r') as f:
+                submission_code = f.read()
+            
+            # Check queue management
+            self.assertIn('self.submission_queue = asyncio.Queue()', submission_code)
+            self.assertIn('async def queue_application', submission_code)
+            self.assertIn('async def process_submission_queue', submission_code)
+            self.assertIn('async def _process_single_submission', submission_code)
+            
+            # Check throttling
+            self.assertIn('from asyncio_throttle import Throttler', submission_code)
+            self.assertIn('self.throttler = Throttler(rate_limit=1, period=2.0)', submission_code)
+            self.assertIn('async with self.throttler:', submission_code)
+            
+            # Check concurrent submission limits
+            self.assertIn('max_concurrent_submissions = 3', submission_code)
+            self.assertIn('self.active_submissions', submission_code)
+            
+            print("✅ Queue processing system is properly implemented")
+            
+        except Exception as e:
+            self.fail(f"Queue processing system test failed: {e}")
+    
+    def test_15_integration_with_other_services(self):
+        """Test integration with other system services"""
+        try:
+            with open('/app/backend/services/application_submission.py', 'r') as f:
+                submission_code = f.read()
+            
+            # Check service integrations
+            self.assertIn('from .gmail import GmailService', submission_code)
+            self.assertIn('from .openrouter import OpenRouterService', submission_code)
+            self.assertIn('from models import Application, ApplicationStatus, Candidate, JobRaw, ResumeVersion, CoverLetter', submission_code)
+            
+            # Check service initialization
+            self.assertIn('self.gmail_service = GmailService()', submission_code)
+            self.assertIn('self.openrouter_service = OpenRouterService()', submission_code)
+            
+            # Check database integration
+            self.assertIn('async def _save_application', submission_code)
+            self.assertIn('await db.applications.insert_one(application.dict())', submission_code)
+            
+            print("✅ Integration with other services is properly implemented")
+            
+        except Exception as e:
+            self.fail(f"Integration with other services test failed: {e}")
+
+
 class TestAdvancedCoverLetterSystem(unittest.TestCase):
     """Test suite for Phase 5 Advanced Cover Letter Generation system"""
     
