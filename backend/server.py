@@ -1589,3 +1589,445 @@ async def shutdown_db_client():
     # Close database connection
     client.close()
     logger.info("Database connection closed")
+
+# Global application submission manager
+application_submission_manager = ApplicationSubmissionManager(ApplicationSubmissionConfig())
+
+#====================================================================
+# PHASE 6: AUTONOMOUS APPLICATION SUBMISSION API ENDPOINTS
+#====================================================================
+
+class ApplicationSubmissionRequest(BaseModel):
+    """Request model for application submission"""
+    candidate_id: str
+    job_id: str
+    resume_version_id: Optional[str] = None
+    cover_letter_id: Optional[str] = None
+    method: ApplicationMethod = ApplicationMethod.DIRECT_FORM
+    
+class BulkApplicationSubmissionRequest(BaseModel):
+    """Request model for bulk application submission"""
+    candidate_id: str
+    job_ids: List[str]
+    resume_version_id: Optional[str] = None
+    cover_letter_id: Optional[str] = None
+    method: ApplicationMethod = ApplicationMethod.DIRECT_FORM
+
+@api_router.post("/applications/submit")
+async def submit_single_application(request: ApplicationSubmissionRequest):
+    """Submit a single job application"""
+    try:
+        # Get candidate
+        candidate_doc = await db.candidates.find_one({"id": request.candidate_id})
+        if not candidate_doc:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        candidate = Candidate(**candidate_doc)
+        
+        # Get job
+        job_doc = await db.jobs_raw.find_one({"id": request.job_id})
+        if not job_doc:
+            raise HTTPException(status_code=404, detail="Job not found")
+        job = JobRaw(**job_doc)
+        
+        # Get resume version or use latest
+        if request.resume_version_id:
+            resume_doc = await db.resume_versions.find_one({"id": request.resume_version_id})
+        else:
+            resume_doc = await db.resume_versions.find_one(
+                {"candidate_id": request.candidate_id}, 
+                sort=[("created_at", -1)]
+            )
+        
+        if not resume_doc:
+            raise HTTPException(status_code=404, detail="Resume version not found")
+        resume_version = ResumeVersion(**resume_doc)
+        
+        # Get cover letter if specified
+        cover_letter = None
+        if request.cover_letter_id:
+            cover_letter_doc = await db.cover_letters.find_one({"id": request.cover_letter_id})
+            if cover_letter_doc:
+                cover_letter = CoverLetter(**cover_letter_doc)
+        
+        # Queue application for submission
+        await application_submission_manager.queue_application(
+            candidate=candidate,
+            job=job,
+            resume_version=resume_version,
+            cover_letter=cover_letter,
+            method=request.method
+        )
+        
+        return {
+            "success": True,
+            "message": "Application queued for submission",
+            "candidate_id": request.candidate_id,
+            "job_id": request.job_id,
+            "method": request.method.value,
+            "queued_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error submitting application: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Application submission failed: {str(e)}")
+
+@api_router.post("/applications/submit-bulk")
+async def submit_bulk_applications(request: BulkApplicationSubmissionRequest):
+    """Submit multiple job applications for a candidate"""
+    try:
+        # Get candidate
+        candidate_doc = await db.candidates.find_one({"id": request.candidate_id})
+        if not candidate_doc:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        candidate = Candidate(**candidate_doc)
+        
+        # Get resume version or use latest
+        if request.resume_version_id:
+            resume_doc = await db.resume_versions.find_one({"id": request.resume_version_id})
+        else:
+            resume_doc = await db.resume_versions.find_one(
+                {"candidate_id": request.candidate_id}, 
+                sort=[("created_at", -1)]
+            )
+        
+        if not resume_doc:
+            raise HTTPException(status_code=404, detail="Resume version not found")
+        resume_version = ResumeVersion(**resume_doc)
+        
+        # Get cover letter if specified
+        cover_letter = None
+        if request.cover_letter_id:
+            cover_letter_doc = await db.cover_letters.find_one({"id": request.cover_letter_id})
+            if cover_letter_doc:
+                cover_letter = CoverLetter(**cover_letter_doc)
+        
+        # Queue applications for all jobs
+        queued_applications = []
+        for job_id in request.job_ids:
+            job_doc = await db.jobs_raw.find_one({"id": job_id})
+            if job_doc:
+                job = JobRaw(**job_doc)
+                
+                await application_submission_manager.queue_application(
+                    candidate=candidate,
+                    job=job,
+                    resume_version=resume_version,
+                    cover_letter=cover_letter,
+                    method=request.method
+                )
+                
+                queued_applications.append({
+                    "job_id": job_id,
+                    "company": job.company,
+                    "position": job.title,
+                    "method": request.method.value
+                })
+        
+        return {
+            "success": True,
+            "message": f"Queued {len(queued_applications)} applications for submission",
+            "candidate_id": request.candidate_id,
+            "queued_applications": queued_applications,
+            "queued_at": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error submitting bulk applications: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Bulk application submission failed: {str(e)}")
+
+@api_router.get("/applications/status")
+async def get_application_status():
+    """Get application submission status and statistics"""
+    try:
+        stats = await application_submission_manager.get_submission_stats()
+        return {
+            "success": True,
+            "statistics": stats,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting application status: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get application status: {str(e)}")
+
+@api_router.get("/applications/{application_id}")
+async def get_application_details(application_id: str):
+    """Get details of a specific application"""
+    try:
+        application_doc = await db.applications.find_one({"id": application_id})
+        if not application_doc:
+            raise HTTPException(status_code=404, detail="Application not found")
+        
+        return {
+            "success": True,
+            "application": application_doc,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting application details: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get application details: {str(e)}")
+
+@api_router.get("/applications/candidate/{candidate_id}")
+async def get_candidate_applications(candidate_id: str, 
+                                   status: Optional[str] = None,
+                                   limit: int = 50, 
+                                   offset: int = 0):
+    """Get applications for a specific candidate"""
+    try:
+        # Build query
+        query = {"candidate_id": candidate_id}
+        if status:
+            query["status"] = status
+        
+        # Get applications
+        applications_cursor = db.applications.find(query).skip(offset).limit(limit).sort("created_at", -1)
+        applications = await applications_cursor.to_list(length=limit)
+        
+        # Get total count
+        total_count = await db.applications.count_documents(query)
+        
+        return {
+            "success": True,
+            "applications": applications,
+            "total_count": total_count,
+            "limit": limit,
+            "offset": offset,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting candidate applications: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get candidate applications: {str(e)}")
+
+@api_router.post("/applications/auto-submit")
+async def auto_submit_applications():
+    """Auto-submit applications for all candidates with matched jobs"""
+    try:
+        # Get all candidates
+        candidates_cursor = db.candidates.find({"status": "active"})
+        candidates = await candidates_cursor.to_list(length=None)
+        
+        total_queued = 0
+        
+        for candidate_doc in candidates:
+            candidate = Candidate(**candidate_doc)
+            
+            # Get matched jobs for this candidate
+            matches_cursor = db.job_matches.find({
+                "candidate_id": candidate.id,
+                "priority": {"$in": ["high", "medium"]},
+                "applied": {"$ne": True}
+            }).sort("match_score", -1).limit(10)
+            
+            matches = await matches_cursor.to_list(length=10)
+            
+            for match in matches:
+                # Get job details
+                job_doc = await db.jobs_raw.find_one({"id": match["job_id"]})
+                if not job_doc:
+                    continue
+                
+                job = JobRaw(**job_doc)
+                
+                # Get latest resume version
+                resume_doc = await db.resume_versions.find_one(
+                    {"candidate_id": candidate.id}, 
+                    sort=[("created_at", -1)]
+                )
+                
+                if not resume_doc:
+                    continue
+                
+                resume_version = ResumeVersion(**resume_doc)
+                
+                # Get latest cover letter
+                cover_letter = None
+                cover_letter_doc = await db.cover_letters.find_one(
+                    {"candidate_id": candidate.id}, 
+                    sort=[("created_at", -1)]
+                )
+                
+                if cover_letter_doc:
+                    cover_letter = CoverLetter(**cover_letter_doc)
+                
+                # Determine application method based on job board
+                method = ApplicationMethod.DIRECT_FORM
+                if job.source == "indeed":
+                    method = ApplicationMethod.INDEED_QUICK
+                elif job.apply_url and job.apply_url.startswith("mailto:"):
+                    method = ApplicationMethod.EMAIL_APPLY
+                
+                # Queue application
+                await application_submission_manager.queue_application(
+                    candidate=candidate,
+                    job=job,
+                    resume_version=resume_version,
+                    cover_letter=cover_letter,
+                    method=method
+                )
+                
+                # Mark as applied in job_matches
+                await db.job_matches.update_one(
+                    {"id": match["id"]},
+                    {"$set": {"applied": True, "applied_at": datetime.utcnow()}}
+                )
+                
+                total_queued += 1
+        
+        return {
+            "success": True,
+            "message": f"Auto-queued {total_queued} applications for submission",
+            "total_queued": total_queued,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error auto-submitting applications: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Auto-submission failed: {str(e)}")
+
+@api_router.get("/applications/analytics")
+async def get_application_analytics():
+    """Get comprehensive application analytics"""
+    try:
+        # Get overall statistics
+        total_applications = await db.applications.count_documents({})
+        successful_applications = await db.applications.count_documents({"status": "applied"})
+        pending_applications = await db.applications.count_documents({"status": "pending"})
+        failed_applications = await db.applications.count_documents({"status": "failed"})
+        
+        # Get applications by method
+        pipeline_method = [
+            {"$group": {"_id": "$job_board", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]
+        applications_by_method = await db.applications.aggregate(pipeline_method).to_list(length=None)
+        
+        # Get applications by day (last 30 days)
+        from datetime import datetime, timedelta
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+        
+        pipeline_daily = [
+            {"$match": {"created_at": {"$gte": thirty_days_ago}}},
+            {"$group": {
+                "_id": {"$dateToString": {"format": "%Y-%m-%d", "date": "$created_at"}},
+                "count": {"$sum": 1}
+            }},
+            {"$sort": {"_id": 1}}
+        ]
+        daily_applications = await db.applications.aggregate(pipeline_daily).to_list(length=None)
+        
+        # Get response rates
+        applications_with_response = await db.applications.count_documents({"response_at": {"$ne": None}})
+        response_rate = (applications_with_response / total_applications * 100) if total_applications > 0 else 0
+        
+        # Get top companies applied to
+        pipeline_companies = [
+            {"$group": {"_id": "$company", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 10}
+        ]
+        top_companies = await db.applications.aggregate(pipeline_companies).to_list(length=10)
+        
+        return {
+            "success": True,
+            "analytics": {
+                "overall_stats": {
+                    "total_applications": total_applications,
+                    "successful_applications": successful_applications,
+                    "pending_applications": pending_applications,
+                    "failed_applications": failed_applications,
+                    "success_rate": (successful_applications / total_applications * 100) if total_applications > 0 else 0,
+                    "response_rate": response_rate
+                },
+                "applications_by_method": applications_by_method,
+                "daily_applications": daily_applications,
+                "top_companies": top_companies
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting application analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get application analytics: {str(e)}")
+
+@api_router.post("/applications/test-submission")
+async def test_application_submission():
+    """Test application submission system with mock data"""
+    try:
+        # Create test candidate
+        test_candidate = Candidate(
+            id=str(uuid.uuid4()),
+            first_name="John",
+            last_name="Doe",
+            email="john.doe@example.com",
+            phone="555-123-4567",
+            location="San Francisco, CA",
+            status="active"
+        )
+        
+        # Create test job
+        test_job = JobRaw(
+            id=str(uuid.uuid4()),
+            title="Software Engineer",
+            company="Tech Corp",
+            location="San Francisco, CA",
+            description="We are looking for a skilled Software Engineer...",
+            requirements="Bachelor's degree in Computer Science...",
+            apply_url="https://example.com/apply",
+            source="indeed",
+            scraped_at=datetime.utcnow()
+        )
+        
+        # Create test resume version
+        test_resume_version = ResumeVersion(
+            id=str(uuid.uuid4()),
+            candidate_id=test_candidate.id,
+            resume_id=str(uuid.uuid4()),
+            version_name="test_version",
+            content=b"Test resume content",
+            tailoring_strategy="job_specific",
+            ats_score=85.5,
+            created_at=datetime.utcnow()
+        )
+        
+        # Create test cover letter
+        test_cover_letter = CoverLetter(
+            id=str(uuid.uuid4()),
+            candidate_id=test_candidate.id,
+            job_id=test_job.id,
+            tone="professional",
+            content="Dear Hiring Manager, I am writing to express my interest...",
+            ats_keywords=["python", "javascript", "software", "engineering"],
+            created_at=datetime.utcnow()
+        )
+        
+        # Test application submission
+        result = await application_submission_manager.engine.submit_application(
+            candidate=test_candidate,
+            job=test_job,
+            resume_version=test_resume_version,
+            cover_letter=test_cover_letter,
+            method=ApplicationMethod.DIRECT_FORM
+        )
+        
+        return {
+            "success": True,
+            "message": "Application submission test completed",
+            "test_result": {
+                "application_id": result.application_id,
+                "success": result.success,
+                "method": result.method.value,
+                "submission_time": result.submission_time.isoformat(),
+                "error_message": result.error_message
+            },
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error testing application submission: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Application submission test failed: {str(e)}")
+
+# Start the submission queue processor
+import asyncio
+asyncio.create_task(application_submission_manager.process_submission_queue())
