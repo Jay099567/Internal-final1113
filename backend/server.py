@@ -2043,7 +2043,8 @@ from services.recruiter_research import RecruiterResearchService
 from services.linkedin_automation import LinkedInAutomation
 
 # Initialize outreach services
-outreach_manager = OutreachCampaignManager(client)
+# Temporarily disabled due to import issues
+# outreach_manager = OutreachCampaignManager(client)
 recruiter_research_service = RecruiterResearchService(client)
 
 # Request models for outreach
