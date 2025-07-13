@@ -10,7 +10,8 @@ import {
   Search,
   Send,
   BarChart3,
-  FileText
+  FileText,
+  Play
 } from "lucide-react";
 
 const Navigation = () => {
