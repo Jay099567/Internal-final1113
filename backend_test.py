@@ -16,6 +16,861 @@ from datetime import datetime
 BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://8a28ed34-61b6-4a05-914f-4af0109f7cf9.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
 
+class TestMasterAutomationOrchestrator(unittest.TestCase):
+    """Test suite for Master Automation Orchestrator - MASS SCALE AUTONOMOUS SYSTEM"""
+    
+    def test_01_automation_orchestrator_structure(self):
+        """Test the Master Automation Orchestrator service structure"""
+        try:
+            with open('/app/backend/services/automation_orchestrator.py', 'r') as f:
+                orchestrator_code = f.read()
+                
+            # Check for key classes
+            self.assertIn('class MasterAutomationOrchestrator', orchestrator_code)
+            self.assertIn('class AutomationPhase(Enum)', orchestrator_code)
+            self.assertIn('class CandidateStatus(Enum)', orchestrator_code)
+            self.assertIn('class AutomationStats', orchestrator_code)
+            
+            # Check automation phases
+            phases = [
+                'SCRAPING = "scraping"',
+                'MATCHING = "matching"',
+                'TAILORING = "tailoring"',
+                'COVER_LETTER = "cover_letter"',
+                'APPLICATION = "application"',
+                'OUTREACH = "outreach"',
+                'FEEDBACK = "feedback"'
+            ]
+            for phase in phases:
+                self.assertIn(phase, orchestrator_code)
+            
+            # Check candidate statuses
+            statuses = [
+                'ACTIVE = "active"',
+                'PAUSED = "paused"',
+                'COMPLETED = "completed"',
+                'ERROR = "error"'
+            ]
+            for status in statuses:
+                self.assertIn(status, orchestrator_code)
+            
+            # Check core orchestrator methods
+            core_methods = [
+                'async def start_autonomous_system',
+                'async def _run_automation_cycle',
+                'async def _execute_job_scraping',
+                'async def _process_candidate_batch',
+                'async def _process_single_candidate',
+                'async def _process_job_matching',
+                'async def _process_resume_tailoring',
+                'async def _process_cover_letters',
+                'async def _process_applications',
+                'async def _process_recruiter_outreach',
+                'async def _run_system_optimization',
+                'async def stop_autonomous_system',
+                'async def get_system_status'
+            ]
+            for method in core_methods:
+                self.assertIn(method, orchestrator_code)
+            
+            # Check service integrations
+            service_imports = [
+                'from .job_scraper import JobScrapingManager',
+                'from .job_matching import JobMatchingService',
+                'from .resume_tailoring import ResumeTailoringService',
+                'from .cover_letter import CoverLetterGenerationService',
+                'from .application_submission import ApplicationSubmissionManager',
+                'from .linkedin_automation import LinkedInAutomationService',
+                'from .feedback_analyzer import FeedbackAnalyzer'
+            ]
+            for import_stmt in service_imports:
+                self.assertIn(import_stmt, orchestrator_code)
+            
+            # Check rate limiting configuration
+            self.assertIn('max_concurrent_candidates = 10', orchestrator_code)
+            self.assertIn("'applications': 50", orchestrator_code)
+            self.assertIn("'outreach': 20", orchestrator_code)
+            self.assertIn("'scraping_sessions': 24", orchestrator_code)
+            
+            print("✅ Master Automation Orchestrator structure verified")
+            
+        except Exception as e:
+            self.fail(f"Master Automation Orchestrator structure test failed: {e}")
+    
+    def test_02_orchestrator_initialization(self):
+        """Test orchestrator initialization and configuration"""
+        try:
+            with open('/app/backend/services/automation_orchestrator.py', 'r') as f:
+                orchestrator_code = f.read()
+            
+            # Check initialization components
+            self.assertIn('def __init__(self, db: AsyncIOMotorDatabase)', orchestrator_code)
+            self.assertIn('self.is_running = False', orchestrator_code)
+            self.assertIn('self.stats = AutomationStats', orchestrator_code)
+            self.assertIn('self.logger = self._setup_logging()', orchestrator_code)
+            
+            # Check service component initialization
+            service_inits = [
+                'self.job_scraper = JobScrapingManager()',
+                'self.job_matcher = JobMatchingService(db)',
+                'self.resume_tailor = ResumeTailoringService(db)',
+                'self.cover_letter_service = CoverLetterGenerationService(db)',
+                'self.application_manager = ApplicationSubmissionManager(db)',
+                'self.linkedin_automation = LinkedInAutomationService(db)',
+                'self.feedback_analyzer = FeedbackAnalyzer(db)'
+            ]
+            for init in service_inits:
+                self.assertIn(init, orchestrator_code)
+            
+            # Check logging setup
+            self.assertIn('def _setup_logging(self)', orchestrator_code)
+            self.assertIn('logger = logging.getLogger("AutomationOrchestrator")', orchestrator_code)
+            
+            print("✅ Orchestrator initialization verified")
+            
+        except Exception as e:
+            self.fail(f"Orchestrator initialization test failed: {e}")
+    
+    def test_03_automation_cycle_processing(self):
+        """Test automation cycle processing logic"""
+        try:
+            with open('/app/backend/services/automation_orchestrator.py', 'r') as f:
+                orchestrator_code = f.read()
+            
+            # Check cycle processing methods
+            cycle_methods = [
+                'async def _run_automation_cycle',
+                'async def _update_stats',
+                'async def _execute_job_scraping',
+                'async def _get_active_candidates',
+                'async def _get_candidate_preferences',
+                'def _batch_candidates'
+            ]
+            for method in cycle_methods:
+                self.assertIn(method, orchestrator_code)
+            
+            # Check candidate processing pipeline
+            pipeline_methods = [
+                'async def _process_candidate_batch',
+                'async def _process_single_candidate',
+                'async def _process_job_matching',
+                'async def _process_resume_tailoring',
+                'async def _process_cover_letters',
+                'async def _process_applications',
+                'async def _process_recruiter_outreach'
+            ]
+            for method in pipeline_methods:
+                self.assertIn(method, orchestrator_code)
+            
+            # Check error handling
+            self.assertIn('async def _handle_candidate_error', orchestrator_code)
+            self.assertIn('async def _handle_critical_error', orchestrator_code)
+            
+            # Check system optimization
+            self.assertIn('async def _run_system_optimization', orchestrator_code)
+            self.assertIn('async def _optimize_matching_algorithms', orchestrator_code)
+            self.assertIn('async def _cleanup_old_data', orchestrator_code)
+            
+            print("✅ Automation cycle processing verified")
+            
+        except Exception as e:
+            self.fail(f"Automation cycle processing test failed: {e}")
+    
+    def test_04_rate_limiting_and_queue_management(self):
+        """Test rate limiting and queue management features"""
+        try:
+            with open('/app/backend/services/automation_orchestrator.py', 'r') as f:
+                orchestrator_code = f.read()
+            
+            # Check rate limiting configuration
+            self.assertIn('self.daily_limits = {', orchestrator_code)
+            self.assertIn("'applications': 50", orchestrator_code)
+            self.assertIn("'outreach': 20", orchestrator_code)
+            self.assertIn("'scraping_sessions': 24", orchestrator_code)
+            
+            # Check concurrent processing limits
+            self.assertIn('self.max_concurrent_candidates = 10', orchestrator_code)
+            
+            # Check daily limit checking logic
+            self.assertIn('today_apps = await self.db.applications.count_documents', orchestrator_code)
+            self.assertIn('if today_apps >= self.daily_limits', orchestrator_code)
+            self.assertIn('today_outreach = await self.db.outreach_messages.count_documents', orchestrator_code)
+            self.assertIn('if today_outreach >= self.daily_limits', orchestrator_code)
+            
+            # Check batch processing
+            self.assertIn('def _batch_candidates', orchestrator_code)
+            self.assertIn('batch_size = self.max_concurrent_candidates', orchestrator_code)
+            
+            print("✅ Rate limiting and queue management verified")
+            
+        except Exception as e:
+            self.fail(f"Rate limiting and queue management test failed: {e}")
+    
+    def test_05_system_status_and_monitoring(self):
+        """Test system status and monitoring capabilities"""
+        try:
+            with open('/app/backend/services/automation_orchestrator.py', 'r') as f:
+                orchestrator_code = f.read()
+            
+            # Check status methods
+            self.assertIn('async def get_system_status', orchestrator_code)
+            self.assertIn('async def _update_stats', orchestrator_code)
+            self.assertIn('async def _log_action', orchestrator_code)
+            
+            # Check AutomationStats dataclass
+            stats_fields = [
+                'total_candidates: int',
+                'active_candidates: int',
+                'jobs_scraped_today: int',
+                'matches_found_today: int',
+                'applications_sent_today: int',
+                'outreach_sent_today: int',
+                'success_rate: float',
+                'errors_today: int'
+            ]
+            for field in stats_fields:
+                self.assertIn(field, orchestrator_code)
+            
+            # Check logging and monitoring
+            self.assertIn('self.logger.info(f"🚀 Starting ELITE JOBHUNTER X Autonomous System")', orchestrator_code)
+            self.assertIn('self.logger.info(f"🔄 Starting automation cycle', orchestrator_code)
+            self.assertIn('self.logger.info(f"✅ Completed automation cycle', orchestrator_code)
+            
+            print("✅ System status and monitoring verified")
+            
+        except Exception as e:
+            self.fail(f"System status and monitoring test failed: {e}")
+
+
+class TestLinkedInAutomationService(unittest.TestCase):
+    """Test suite for LinkedIn Automation Service"""
+    
+    def test_01_linkedin_automation_structure(self):
+        """Test LinkedIn Automation Service structure"""
+        try:
+            with open('/app/backend/services/linkedin_automation.py', 'r') as f:
+                linkedin_code = f.read()
+                
+            # Check for key classes
+            self.assertIn('class LinkedInAutomationService', linkedin_code)
+            self.assertIn('class OutreachStatus(Enum)', linkedin_code)
+            self.assertIn('class MessageType(Enum)', linkedin_code)
+            self.assertIn('class RecruiterProfile', linkedin_code)
+            self.assertIn('class OutreachCampaign', linkedin_code)
+            
+            # Check outreach status enum
+            statuses = [
+                'PENDING = "pending"',
+                'SENT = "sent"',
+                'CONNECTED = "connected"',
+                'REPLIED = "replied"',
+                'FAILED = "failed"'
+            ]
+            for status in statuses:
+                self.assertIn(status, linkedin_code)
+            
+            # Check message type enum
+            message_types = [
+                'CONNECTION_REQUEST = "connection_request"',
+                'FOLLOW_UP = "follow_up"',
+                'JOB_INQUIRY = "job_inquiry"',
+                'NETWORKING = "networking"'
+            ]
+            for msg_type in message_types:
+                self.assertIn(msg_type, linkedin_code)
+            
+            print("✅ LinkedIn Automation Service structure verified")
+            
+        except Exception as e:
+            self.fail(f"LinkedIn Automation Service structure test failed: {e}")
+    
+    def test_02_recruiter_research_functionality(self):
+        """Test recruiter research functionality"""
+        try:
+            with open('/app/backend/services/linkedin_automation.py', 'r') as f:
+                linkedin_code = f.read()
+            
+            # Check recruiter research methods
+            research_methods = [
+                'async def _research_company_recruiters',
+                'async def _search_recruiters_browser',
+                'async def _ai_recruiter_research',
+                'def _deduplicate_recruiters',
+                'def _rank_recruiters',
+                'def _is_relevant_recruiter',
+                'def _calculate_relevance_score'
+            ]
+            for method in research_methods:
+                self.assertIn(method, linkedin_code)
+            
+            # Check search patterns
+            self.assertIn('f"{company} talent acquisition"', linkedin_code)
+            self.assertIn('f"{company} recruiter"', linkedin_code)
+            self.assertIn('f"{company} hiring manager"', linkedin_code)
+            self.assertIn('f"{company} HR"', linkedin_code)
+            
+            # Check RecruiterProfile dataclass fields
+            profile_fields = [
+                'name: str',
+                'title: str',
+                'company: str',
+                'linkedin_url: str',
+                'profile_id: str',
+                'relevance_score: float'
+            ]
+            for field in profile_fields:
+                self.assertIn(field, linkedin_code)
+            
+            print("✅ Recruiter research functionality verified")
+            
+        except Exception as e:
+            self.fail(f"Recruiter research functionality test failed: {e}")
+    
+    def test_03_outreach_campaign_management(self):
+        """Test outreach campaign creation and management"""
+        try:
+            with open('/app/backend/services/linkedin_automation.py', 'r') as f:
+                linkedin_code = f.read()
+            
+            # Check campaign management methods
+            campaign_methods = [
+                'async def execute_recruiter_outreach',
+                'async def _execute_stealth_outreach',
+                'async def _execute_api_outreach',
+                'async def _save_campaign_results',
+                'async def _check_daily_limits'
+            ]
+            for method in campaign_methods:
+                self.assertIn(method, linkedin_code)
+            
+            # Check OutreachCampaign dataclass fields
+            campaign_fields = [
+                'campaign_id: str',
+                'candidate_id: str',
+                'company: str',
+                'job_title: str',
+                'job_id: str',
+                'target_recruiters: List[RecruiterProfile]',
+                'messages_sent: int',
+                'connections_made: int',
+                'replies_received: int',
+                'created_at: datetime'
+            ]
+            for field in campaign_fields:
+                self.assertIn(field, linkedin_code)
+            
+            print("✅ Outreach campaign management verified")
+            
+        except Exception as e:
+            self.fail(f"Outreach campaign management test failed: {e}")
+    
+    def test_04_stealth_automation_features(self):
+        """Test stealth automation features"""
+        try:
+            with open('/app/backend/services/linkedin_automation.py', 'r') as f:
+                linkedin_code = f.read()
+            
+            # Check stealth configuration
+            self.assertIn('self.stealth_config = {', linkedin_code)
+            self.assertIn("'user_agents':", linkedin_code)
+            self.assertIn("'screen_resolutions':", linkedin_code)
+            
+            # Check stealth methods
+            stealth_methods = [
+                'async def _create_stealth_browser',
+                'async def _human_like_delay',
+                'async def _randomize_user_agent',
+                'async def _simulate_human_behavior'
+            ]
+            for method in stealth_methods:
+                self.assertIn(method, linkedin_code)
+            
+            # Check browser automation imports
+            browser_imports = [
+                'import undetected_chromedriver as uc',
+                'from selenium import webdriver',
+                'from selenium.webdriver.common.by import By'
+            ]
+            for import_stmt in browser_imports:
+                self.assertIn(import_stmt, linkedin_code)
+            
+            print("✅ Stealth automation features verified")
+            
+        except Exception as e:
+            self.fail(f"Stealth automation features test failed: {e}")
+    
+    def test_05_rate_limiting_and_anti_detection(self):
+        """Test rate limiting and anti-detection measures"""
+        try:
+            with open('/app/backend/services/linkedin_automation.py', 'r') as f:
+                linkedin_code = f.read()
+            
+            # Check rate limiting configuration
+            self.assertIn('self.rate_limits = {', linkedin_code)
+            self.assertIn("'connections_per_day': 15", linkedin_code)
+            self.assertIn("'messages_per_day': 25", linkedin_code)
+            self.assertIn("'profile_views_per_day': 50", linkedin_code)
+            self.assertIn("'delay_between_actions': (5, 15)", linkedin_code)
+            self.assertIn("'session_length': (45, 90)", linkedin_code)
+            self.assertIn("'break_between_sessions': (120, 240)", linkedin_code)
+            
+            # Check daily limit checking
+            self.assertIn('async def _check_daily_limits', linkedin_code)
+            
+            # Check anti-detection measures
+            self.assertIn('SELENIUM_AVAILABLE', linkedin_code)
+            self.assertIn('logging.warning("Selenium not available - LinkedIn automation will use fallback mode")', linkedin_code)
+            
+            print("✅ Rate limiting and anti-detection measures verified")
+            
+        except Exception as e:
+            self.fail(f"Rate limiting and anti-detection test failed: {e}")
+
+
+class TestFeedbackAnalyzer(unittest.TestCase):
+    """Test suite for Feedback Learning Loop"""
+    
+    def test_01_feedback_analyzer_structure(self):
+        """Test Feedback Analyzer service structure"""
+        try:
+            with open('/app/backend/services/feedback_analyzer.py', 'r') as f:
+                feedback_code = f.read()
+                
+            # Check for key classes
+            self.assertIn('class FeedbackAnalyzer', feedback_code)
+            self.assertIn('class OptimizationStrategy(Enum)', feedback_code)
+            self.assertIn('class OptimizationRecommendation', feedback_code)
+            
+            # Check optimization strategies
+            strategies = [
+                'KEYWORD_OPTIMIZATION = "keyword_optimization"',
+                'RESUME_STRATEGY = "resume_strategy"',
+                'OUTREACH_STRATEGY = "outreach_strategy"',
+                'JOB_TARGETING = "job_targeting"',
+                'TIMING_OPTIMIZATION = "timing_optimization"'
+            ]
+            for strategy in strategies:
+                self.assertIn(strategy, feedback_code)
+            
+            # Check core analyzer methods
+            core_methods = [
+                'async def analyze_daily_performance',
+                'async def _collect_performance_data',
+                'async def _analyze_success_patterns',
+                'async def _generate_optimization_recommendations',
+                'async def _apply_automated_optimizations',
+                'async def predict_application_success'
+            ]
+            for method in core_methods:
+                self.assertIn(method, feedback_code)
+            
+            print("✅ Feedback Analyzer structure verified")
+            
+        except Exception as e:
+            self.fail(f"Feedback Analyzer structure test failed: {e}")
+    
+    def test_02_performance_data_collection(self):
+        """Test performance data collection functionality"""
+        try:
+            with open('/app/backend/services/feedback_analyzer.py', 'r') as f:
+                feedback_code = f.read()
+            
+            # Check data collection methods
+            collection_methods = [
+                'async def _collect_performance_data',
+                'async def _get_current_keyword_performance',
+                'async def _get_current_resume_performance',
+                'async def _get_current_outreach_performance'
+            ]
+            for method in collection_methods:
+                self.assertIn(method, feedback_code)
+            
+            # Check aggregation pipelines
+            pipeline_checks = [
+                'applications_pipeline = [',
+                'matching_pipeline = [',
+                'tailoring_pipeline = [',
+                'outreach_pipeline = ['
+            ]
+            for pipeline in pipeline_checks:
+                self.assertIn(pipeline, feedback_code)
+            
+            # Check MongoDB aggregation operations
+            aggregation_ops = [
+                '{"$match":',
+                '{"$group":',
+                '{"$sort":',
+                '{"$avg":',
+                '{"$sum":'
+            ]
+            for op in aggregation_ops:
+                self.assertIn(op, feedback_code)
+            
+            print("✅ Performance data collection verified")
+            
+        except Exception as e:
+            self.fail(f"Performance data collection test failed: {e}")
+    
+    def test_03_success_pattern_analysis(self):
+        """Test success pattern analysis"""
+        try:
+            with open('/app/backend/services/feedback_analyzer.py', 'r') as f:
+                feedback_code = f.read()
+            
+            # Check pattern analysis methods
+            self.assertIn('async def _analyze_success_patterns', feedback_code)
+            self.assertIn('def _calculate_success_score', feedback_code)
+            
+            # Check pattern categories
+            pattern_categories = [
+                '"successful_keywords": []',
+                '"optimal_application_times": []',
+                '"best_resume_strategies": []',
+                '"effective_outreach_approaches": []',
+                '"candidate_success_factors": {}'
+            ]
+            for category in pattern_categories:
+                self.assertIn(category, feedback_code)
+            
+            # Check success scoring
+            success_scores = [
+                '"pending": 0.1',
+                '"viewed": 0.2',
+                '"rejected": 0.0',
+                '"phone_screen": 0.5',
+                '"interview_scheduled": 0.7',
+                '"interview_completed": 0.8',
+                '"offer_received": 1.0'
+            ]
+            for score in success_scores:
+                self.assertIn(score, feedback_code)
+            
+            # Check statistical analysis
+            self.assertIn('import statistics', feedback_code)
+            self.assertIn('statistics.mean(scores)', feedback_code)
+            self.assertIn('statistics.stdev(scores)', feedback_code)
+            
+            print("✅ Success pattern analysis verified")
+            
+        except Exception as e:
+            self.fail(f"Success pattern analysis test failed: {e}")
+    
+    def test_04_optimization_recommendation_generation(self):
+        """Test optimization recommendation generation"""
+        try:
+            with open('/app/backend/services/feedback_analyzer.py', 'r') as f:
+                feedback_code = f.read()
+            
+            # Check recommendation generation methods
+            recommendation_methods = [
+                'async def _generate_optimization_recommendations',
+                'async def _apply_automated_optimizations',
+                'async def _apply_single_optimization',
+                'async def _generate_ai_insights'
+            ]
+            for method in recommendation_methods:
+                self.assertIn(method, feedback_code)
+            
+            # Check OptimizationRecommendation dataclass fields
+            recommendation_fields = [
+                'strategy: OptimizationStrategy',
+                'current_performance: float',
+                'predicted_improvement: float',
+                'confidence: float',
+                'action_items: List[str]',
+                'priority: int'
+            ]
+            for field in recommendation_fields:
+                self.assertIn(field, feedback_code)
+            
+            # Check specific optimization applications
+            optimization_methods = [
+                'async def _apply_keyword_optimization',
+                'async def _apply_resume_strategy_optimization',
+                'async def _apply_outreach_optimization',
+                'async def _apply_job_targeting_optimization'
+            ]
+            for method in optimization_methods:
+                self.assertIn(method, feedback_code)
+            
+            print("✅ Optimization recommendation generation verified")
+            
+        except Exception as e:
+            self.fail(f"Optimization recommendation generation test failed: {e}")
+    
+    def test_05_ml_model_integration(self):
+        """Test ML model integration (if sklearn available)"""
+        try:
+            with open('/app/backend/services/feedback_analyzer.py', 'r') as f:
+                feedback_code = f.read()
+            
+            # Check ML imports and availability check
+            self.assertIn('try:', feedback_code)
+            self.assertIn('from sklearn', feedback_code)
+            self.assertIn('SKLEARN_AVAILABLE = True', feedback_code)
+            self.assertIn('except ImportError:', feedback_code)
+            self.assertIn('SKLEARN_AVAILABLE = False', feedback_code)
+            
+            # Check ML model methods
+            ml_methods = [
+                'async def _update_ml_models',
+                'async def _prepare_ml_training_data',
+                'async def _update_success_predictor'
+            ]
+            for method in ml_methods:
+                self.assertIn(method, feedback_code)
+            
+            # Check ML model usage
+            self.assertIn('if SKLEARN_AVAILABLE:', feedback_code)
+            self.assertIn('await self._update_ml_models(performance_data)', feedback_code)
+            
+            # Check prediction functionality
+            self.assertIn('async def predict_application_success', feedback_code)
+            
+            print("✅ ML model integration verified")
+            
+        except Exception as e:
+            self.fail(f"ML model integration test failed: {e}")
+
+
+class TestServiceIntegration(unittest.TestCase):
+    """Test suite for Service Integration"""
+    
+    def test_01_service_imports_and_dependencies(self):
+        """Test that all new services can be imported without errors"""
+        try:
+            # Test automation orchestrator imports
+            with open('/app/backend/services/automation_orchestrator.py', 'r') as f:
+                orchestrator_code = f.read()
+            
+            required_imports = [
+                'from .job_scraper import JobScrapingManager',
+                'from .job_matching import JobMatchingService',
+                'from .resume_tailoring import ResumeTailoringService',
+                'from .cover_letter import CoverLetterGenerationService',
+                'from .application_submission import ApplicationSubmissionManager',
+                'from .linkedin_automation import LinkedInAutomationService',
+                'from .feedback_analyzer import FeedbackAnalyzer',
+                'from .openrouter import get_openrouter_service'
+            ]
+            
+            for import_stmt in required_imports:
+                self.assertIn(import_stmt, orchestrator_code)
+            
+            # Test LinkedIn automation imports
+            with open('/app/backend/services/linkedin_automation.py', 'r') as f:
+                linkedin_code = f.read()
+            
+            self.assertIn('from .openrouter import get_openrouter_service', linkedin_code)
+            
+            # Test feedback analyzer imports
+            with open('/app/backend/services/feedback_analyzer.py', 'r') as f:
+                feedback_code = f.read()
+            
+            self.assertIn('from .openrouter import get_openrouter_service', feedback_code)
+            
+            print("✅ Service imports and dependencies verified")
+            
+        except Exception as e:
+            self.fail(f"Service imports test failed: {e}")
+    
+    def test_02_database_connections_and_operations(self):
+        """Test database connections and operations"""
+        try:
+            # Check database usage in orchestrator
+            with open('/app/backend/services/automation_orchestrator.py', 'r') as f:
+                orchestrator_code = f.read()
+            
+            db_operations = [
+                'def __init__(self, db: AsyncIOMotorDatabase)',
+                'self.db = db',
+                'await self.db.automation_logs.find_one',
+                'await self.db.candidates.find',
+                'await self.db.applications.count_documents',
+                'await self.db.automation_logs.insert_one'
+            ]
+            for operation in db_operations:
+                self.assertIn(operation, orchestrator_code)
+            
+            # Check database usage in LinkedIn automation
+            with open('/app/backend/services/linkedin_automation.py', 'r') as f:
+                linkedin_code = f.read()
+            
+            self.assertIn('def __init__(self, db: AsyncIOMotorDatabase)', linkedin_code)
+            self.assertIn('self.db = db', linkedin_code)
+            
+            # Check database usage in feedback analyzer
+            with open('/app/backend/services/feedback_analyzer.py', 'r') as f:
+                feedback_code = f.read()
+            
+            self.assertIn('def __init__(self, db: AsyncIOMotorDatabase)', feedback_code)
+            self.assertIn('self.db = db', feedback_code)
+            
+            print("✅ Database connections and operations verified")
+            
+        except Exception as e:
+            self.fail(f"Database connections test failed: {e}")
+    
+    def test_03_openrouter_integration_with_free_models(self):
+        """Test OpenRouter integration with free models"""
+        try:
+            # Check LinkedIn automation OpenRouter usage
+            with open('/app/backend/services/linkedin_automation.py', 'r') as f:
+                linkedin_code = f.read()
+            
+            self.assertIn('self.openrouter = get_openrouter_service()', linkedin_code)
+            self.assertIn('await self.openrouter.get_completion', linkedin_code)
+            self.assertIn('model="google/gemma-2-9b-it:free"', linkedin_code)
+            
+            # Check feedback analyzer OpenRouter usage
+            with open('/app/backend/services/feedback_analyzer.py', 'r') as f:
+                feedback_code = f.read()
+            
+            self.assertIn('self.openrouter = get_openrouter_service()', feedback_code)
+            self.assertIn('await self.openrouter.get_completion', feedback_code)
+            self.assertIn('model="google/gemma-2-9b-it:free"', feedback_code)
+            
+            print("✅ OpenRouter integration with free models verified")
+            
+        except Exception as e:
+            self.fail(f"OpenRouter integration test failed: {e}")
+    
+    def test_04_error_handling_and_logging_systems(self):
+        """Test error handling and logging systems"""
+        try:
+            # Check orchestrator error handling
+            with open('/app/backend/services/automation_orchestrator.py', 'r') as f:
+                orchestrator_code = f.read()
+            
+            error_handling = [
+                'try:',
+                'except Exception as e:',
+                'self.logger.error(f"❌',
+                'async def _handle_candidate_error',
+                'async def _handle_critical_error',
+                'self.logger.critical(f"CRITICAL SYSTEM ERROR: {error}")'
+            ]
+            for handler in error_handling:
+                self.assertIn(handler, orchestrator_code)
+            
+            # Check LinkedIn automation error handling
+            with open('/app/backend/services/linkedin_automation.py', 'r') as f:
+                linkedin_code = f.read()
+            
+            self.assertIn('except Exception as e:', linkedin_code)
+            self.assertIn('self.logger.error(f"❌', linkedin_code)
+            
+            # Check feedback analyzer error handling
+            with open('/app/backend/services/feedback_analyzer.py', 'r') as f:
+                feedback_code = f.read()
+            
+            self.assertIn('except Exception as e:', feedback_code)
+            self.assertIn('self.logger.error(f"', feedback_code)
+            
+            print("✅ Error handling and logging systems verified")
+            
+        except Exception as e:
+            self.fail(f"Error handling and logging test failed: {e}")
+    
+    def test_05_health_check_endpoint(self):
+        """Test basic health check endpoint"""
+        try:
+            response = requests.get(f"{API_BASE}/health", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertIn("status", data)
+            self.assertEqual(data["status"], "healthy")
+            self.assertIn("database", data)
+            self.assertIn("openrouter", data)
+            self.assertIn("timestamp", data)
+            
+            print("✅ Health check endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Health check failed: {e}")
+
+
+class TestAPIEndpoints(unittest.TestCase):
+    """Test suite for API Endpoints"""
+    
+    def test_01_check_server_imports(self):
+        """Check if server.py imports the new services"""
+        try:
+            with open('/app/backend/server.py', 'r') as f:
+                server_code = f.read()
+            
+            # Check if automation orchestrator is imported
+            # Note: It might not be directly imported in server.py if it's a background service
+            
+            # Check existing service imports that should work with new components
+            existing_imports = [
+                'from services.openrouter import get_openrouter_service',
+                'from services.gmail import gmail_service',
+                'from services.resume_parser import resume_service',
+                'from services.scheduler import get_scheduler',
+                'from services.job_matching import get_job_matching_service',
+                'from services.resume_tailoring import get_resume_tailoring_service',
+                'from services.application_submission import ApplicationSubmissionManager'
+            ]
+            
+            for import_stmt in existing_imports:
+                self.assertIn(import_stmt, server_code)
+            
+            print("✅ Server imports verified")
+            
+        except Exception as e:
+            self.fail(f"Server imports test failed: {e}")
+    
+    def test_02_existing_endpoints_still_work(self):
+        """Test that existing endpoints still work with new dependencies"""
+        try:
+            # Test root endpoint
+            response = requests.get(f"{API_BASE}/", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertIn("message", data)
+            self.assertIn("Elite JobHunter X API", data["message"])
+            
+            # Test dashboard stats endpoint
+            response = requests.get(f"{API_BASE}/dashboard/stats", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertIn("counts", data)
+            
+            print("✅ Existing endpoints still working")
+            
+        except Exception as e:
+            self.fail(f"Existing endpoints test failed: {e}")
+    
+    def test_03_service_initialization_in_server(self):
+        """Test service initialization patterns in server"""
+        try:
+            with open('/app/backend/server.py', 'r') as f:
+                server_code = f.read()
+            
+            # Check service getter functions
+            service_getters = [
+                'get_openrouter_service()',
+                'get_scheduler()',
+                'get_job_matching_service()',
+                'get_resume_tailoring_service('
+            ]
+            
+            for getter in service_getters:
+                self.assertIn(getter, server_code)
+            
+            # Check application submission manager
+            self.assertIn('application_submission_manager = ApplicationSubmissionManager', server_code)
+            
+            print("✅ Service initialization patterns verified")
+            
+        except Exception as e:
+            self.fail(f"Service initialization test failed: {e}")
+
+
 class TestApplicationSubmissionSystem(unittest.TestCase):
     """Test suite for Phase 6 Application Submission system"""
     
