@@ -254,15 +254,18 @@ backend:
 
   - task: "APScheduler Automation"
     implemented: true
-    working: true
+    working: false
     file: "services/scheduler.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: true
         agent: "main"
         comment: "Created automated scheduling system with 4 default job scraping schedules running every 6-8 hours. Includes logging, error handling, and manual scraping capabilities."
+      - working: false
+        agent: "testing"
+        comment: "ISSUE IDENTIFIED: ❌ APScheduler Automation has proxy configuration issues preventing successful job execution. Scheduler is running and jobs are scheduled correctly, but execution fails due to proxy.username configuration errors. Core scheduling infrastructure is sound but needs proxy configuration fix."
 
   - task: "AI Job Matching Service"
     implemented: true
