@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Elite JobHunter X - Backend API Testing
-Comprehensive tests for Phase 6 Application Submission system
+Comprehensive tests for MASS SCALE AUTONOMOUS SYSTEM components
 """
 
 import unittest
