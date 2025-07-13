@@ -428,12 +428,7 @@ Python, JavaScript, React, Django, FastAPI, AWS, Docker, Kubernetes, PostgreSQL,
             
         try:
             # Test job matching with vector embeddings
-            response = requests.post(
-                f"{API_BASE}/matching/test",
-                json={
-                    "candidate_id": self.test_candidate_id,
-                    "job_title": "Senior Python Developer",
-                    "job_description": """
+            job_description = """
                     We are looking for a Senior Python Developer with experience in:
                     - Python, Django, FastAPI
                     - React, JavaScript
@@ -441,7 +436,9 @@ Python, JavaScript, React, Django, FastAPI, AWS, Docker, Kubernetes, PostgreSQL,
                     - PostgreSQL, MongoDB
                     - 5+ years of experience
                     """
-                },
+            
+            response = requests.post(
+                f"{API_BASE}/matching/test?candidate_id={self.test_candidate_id}&job_title=Senior%20Python%20Developer&job_description={requests.utils.quote(job_description)}",
                 timeout=60
             )
             
