@@ -2031,3 +2031,586 @@ async def test_application_submission():
 # Start the submission queue processor
 import asyncio
 asyncio.create_task(application_submission_manager.process_submission_queue())
+
+
+# ================================================================================
+# PHASE 7: RECRUITER OUTREACH ENGINE API ENDPOINTS
+# ================================================================================
+
+from services.outreach_manager import OutreachCampaignManager
+from services.recruiter_research import RecruiterResearchService
+from services.linkedin_automation import LinkedInAutomation
+
+# Initialize outreach services
+outreach_manager = OutreachCampaignManager(client)
+recruiter_research_service = RecruiterResearchService(client)
+
+# Request models for outreach
+class RecruiterCreateRequest(BaseModel):
+    name: str
+    email: Optional[EmailStr] = None
+    linkedin_url: Optional[str] = None
+    linkedin_id: Optional[str] = None
+    company: Optional[str] = None
+    company_domain: Optional[str] = None
+    title: Optional[str] = None
+    location: Optional[str] = None
+    industry: Optional[str] = None
+    recruiter_type: RecruiterType = RecruiterType.INTERNAL
+    specializations: List[str] = []
+    seniority_levels: List[str] = []
+
+class CampaignCreateRequest(BaseModel):
+    name: str
+    description: Optional[str] = None
+    target_roles: List[str] = []
+    target_companies: List[str] = []
+    target_locations: List[str] = []
+    channels: List[OutreachChannel] = [OutreachChannel.LINKEDIN]
+    daily_limit: int = 10
+    delay_between_messages: int = 300
+    follow_up_delay: int = 86400
+    max_follow_ups: int = 3
+    personalization_level: str = "medium"
+    tone: OutreachTone = OutreachTone.WARM
+    auto_follow_up: bool = True
+
+class MessageCreateRequest(BaseModel):
+    campaign_id: str
+    recruiter_id: str
+    channel: OutreachChannel
+    subject: Optional[str] = None
+    content: str
+    personalization_data: Dict[str, Any] = {}
+    tone: OutreachTone
+    scheduled_for: Optional[datetime] = None
+
+# LinkedIn OAuth endpoints
+@api_router.get("/outreach/linkedin/auth-url/{candidate_id}")
+async def get_linkedin_auth_url(candidate_id: str):
+    """Get LinkedIn OAuth URL for candidate authentication"""
+    try:
+        # Check if candidate exists
+        candidate = await db.candidates.find_one({"id": candidate_id})
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        
+        async with LinkedInAutomation(client) as linkedin:
+            auth_url = linkedin.get_oauth_url(candidate_id)
+        
+        return {
+            "success": True,
+            "auth_url": auth_url,
+            "candidate_id": candidate_id
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting LinkedIn auth URL: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get LinkedIn auth URL: {str(e)}")
+
+@api_router.post("/outreach/linkedin/callback")
+async def linkedin_oauth_callback(code: str, state: str):
+    """Handle LinkedIn OAuth callback"""
+    try:
+        candidate_id = state
+        
+        async with LinkedInAutomation(client) as linkedin:
+            tokens = await linkedin.exchange_code_for_tokens(code, candidate_id)
+        
+        if tokens:
+            return {
+                "success": True,
+                "message": "LinkedIn authentication successful",
+                "candidate_id": candidate_id
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Failed to authenticate with LinkedIn")
+            
+    except Exception as e:
+        logger.error(f"Error in LinkedIn OAuth callback: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"LinkedIn authentication failed: {str(e)}")
+
+# Recruiter management endpoints
+@api_router.post("/outreach/recruiters")
+async def create_recruiter(request: RecruiterCreateRequest):
+    """Create a new recruiter"""
+    try:
+        async with RecruiterResearchService(client) as research_service:
+            recruiter_id = await research_service.save_recruiter(request.dict())
+        
+        return {
+            "success": True,
+            "message": "Recruiter created successfully",
+            "recruiter_id": recruiter_id
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating recruiter: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create recruiter: {str(e)}")
+
+@api_router.get("/outreach/recruiters")
+async def get_recruiters(
+    company: Optional[str] = None,
+    location: Optional[str] = None,
+    specialization: Optional[str] = None,
+    limit: int = 20,
+    skip: int = 0
+):
+    """Get recruiters with optional filters"""
+    try:
+        # Build query
+        query = {"is_active": True}
+        if company:
+            query["company"] = {"$regex": company, "$options": "i"}
+        if location:
+            query["location"] = {"$regex": location, "$options": "i"}
+        if specialization:
+            query["specializations"] = {"$in": [specialization]}
+        
+        # Get recruiters
+        recruiters = await db.recruiters.find(query).skip(skip).limit(limit).to_list(length=limit)
+        total = await db.recruiters.count_documents(query)
+        
+        return {
+            "success": True,
+            "recruiters": recruiters,
+            "total": total,
+            "limit": limit,
+            "skip": skip
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting recruiters: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get recruiters: {str(e)}")
+
+@api_router.get("/outreach/recruiters/{recruiter_id}")
+async def get_recruiter(recruiter_id: str):
+    """Get recruiter details"""
+    try:
+        recruiter = await db.recruiters.find_one({"id": recruiter_id})
+        if not recruiter:
+            raise HTTPException(status_code=404, detail="Recruiter not found")
+        
+        return {
+            "success": True,
+            "recruiter": recruiter
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting recruiter: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get recruiter: {str(e)}")
+
+@api_router.post("/outreach/recruiters/{recruiter_id}/research")
+async def research_recruiter(recruiter_id: str):
+    """Perform comprehensive research on a recruiter"""
+    try:
+        async with RecruiterResearchService(client) as research_service:
+            research_data = await research_service.research_recruiter(recruiter_id)
+        
+        return {
+            "success": True,
+            "message": "Recruiter research completed",
+            "research_data": research_data
+        }
+        
+    except Exception as e:
+        logger.error(f"Error researching recruiter: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to research recruiter: {str(e)}")
+
+@api_router.post("/outreach/recruiters/search")
+async def search_recruiters(
+    company_names: List[str],
+    limit_per_company: int = 10
+):
+    """Search for recruiters across multiple companies"""
+    try:
+        async with RecruiterResearchService(client) as research_service:
+            recruiters = await research_service.bulk_research_recruiters(
+                company_names=company_names,
+                limit_per_company=limit_per_company
+            )
+        
+        return {
+            "success": True,
+            "message": f"Found {len(recruiters)} recruiters",
+            "recruiters": recruiters,
+            "companies_searched": company_names
+        }
+        
+    except Exception as e:
+        logger.error(f"Error searching recruiters: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to search recruiters: {str(e)}")
+
+# Campaign management endpoints
+@api_router.post("/outreach/campaigns")
+async def create_campaign(candidate_id: str, request: CampaignCreateRequest):
+    """Create a new outreach campaign"""
+    try:
+        # Check if candidate exists
+        candidate = await db.candidates.find_one({"id": candidate_id})
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        
+        campaign_id = await outreach_manager.create_campaign(
+            candidate_id=candidate_id,
+            campaign_data=request.dict()
+        )
+        
+        return {
+            "success": True,
+            "message": "Campaign created successfully",
+            "campaign_id": campaign_id
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create campaign: {str(e)}")
+
+@api_router.get("/outreach/campaigns/{campaign_id}")
+async def get_campaign(campaign_id: str):
+    """Get campaign details"""
+    try:
+        campaign = await db.campaigns.find_one({"id": campaign_id})
+        if not campaign:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        return {
+            "success": True,
+            "campaign": campaign
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get campaign: {str(e)}")
+
+@api_router.get("/outreach/candidates/{candidate_id}/campaigns")
+async def get_candidate_campaigns(candidate_id: str, limit: int = 20, skip: int = 0):
+    """Get campaigns for a candidate"""
+    try:
+        campaigns = await db.campaigns.find(
+            {"candidate_id": candidate_id}
+        ).skip(skip).limit(limit).sort("created_at", -1).to_list(length=limit)
+        
+        total = await db.campaigns.count_documents({"candidate_id": candidate_id})
+        
+        return {
+            "success": True,
+            "campaigns": campaigns,
+            "total": total,
+            "limit": limit,
+            "skip": skip
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting candidate campaigns: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get candidate campaigns: {str(e)}")
+
+@api_router.post("/outreach/campaigns/{campaign_id}/start")
+async def start_campaign(campaign_id: str):
+    """Start an outreach campaign"""
+    try:
+        success = await outreach_manager.start_campaign(campaign_id)
+        
+        if success:
+            return {
+                "success": True,
+                "message": "Campaign started successfully",
+                "campaign_id": campaign_id
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Failed to start campaign")
+            
+    except Exception as e:
+        logger.error(f"Error starting campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to start campaign: {str(e)}")
+
+@api_router.post("/outreach/campaigns/{campaign_id}/pause")
+async def pause_campaign(campaign_id: str):
+    """Pause an active campaign"""
+    try:
+        success = await outreach_manager.pause_campaign(campaign_id)
+        
+        if success:
+            return {
+                "success": True,
+                "message": "Campaign paused successfully",
+                "campaign_id": campaign_id
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Failed to pause campaign")
+            
+    except Exception as e:
+        logger.error(f"Error pausing campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to pause campaign: {str(e)}")
+
+@api_router.post("/outreach/campaigns/{campaign_id}/resume")
+async def resume_campaign(campaign_id: str):
+    """Resume a paused campaign"""
+    try:
+        success = await outreach_manager.resume_campaign(campaign_id)
+        
+        if success:
+            return {
+                "success": True,
+                "message": "Campaign resumed successfully",
+                "campaign_id": campaign_id
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Failed to resume campaign")
+            
+    except Exception as e:
+        logger.error(f"Error resuming campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to resume campaign: {str(e)}")
+
+@api_router.post("/outreach/campaigns/{campaign_id}/stop")
+async def stop_campaign(campaign_id: str):
+    """Stop a campaign"""
+    try:
+        success = await outreach_manager.stop_campaign(campaign_id)
+        
+        if success:
+            return {
+                "success": True,
+                "message": "Campaign stopped successfully",
+                "campaign_id": campaign_id
+            }
+        else:
+            raise HTTPException(status_code=400, detail="Failed to stop campaign")
+            
+    except Exception as e:
+        logger.error(f"Error stopping campaign: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to stop campaign: {str(e)}")
+
+@api_router.get("/outreach/campaigns/{campaign_id}/analytics")
+async def get_campaign_analytics(campaign_id: str):
+    """Get campaign analytics"""
+    try:
+        analytics = await outreach_manager.get_campaign_analytics(campaign_id)
+        
+        return {
+            "success": True,
+            "analytics": analytics
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting campaign analytics: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get campaign analytics: {str(e)}")
+
+# Message management endpoints
+@api_router.post("/outreach/messages")
+async def create_message(request: MessageCreateRequest):
+    """Create a new outreach message"""
+    try:
+        message = OutreachMessage(**request.dict())
+        await db.messages.insert_one(message.dict())
+        
+        return {
+            "success": True,
+            "message": "Outreach message created successfully",
+            "message_id": message.id
+        }
+        
+    except Exception as e:
+        logger.error(f"Error creating message: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create message: {str(e)}")
+
+@api_router.get("/outreach/campaigns/{campaign_id}/messages")
+async def get_campaign_messages(
+    campaign_id: str,
+    status: Optional[OutreachStatus] = None,
+    limit: int = 50,
+    skip: int = 0
+):
+    """Get messages for a campaign"""
+    try:
+        # Build query
+        query = {"campaign_id": campaign_id}
+        if status:
+            query["status"] = status.value
+        
+        messages = await db.messages.find(query).skip(skip).limit(limit).sort("created_at", -1).to_list(length=limit)
+        total = await db.messages.count_documents(query)
+        
+        return {
+            "success": True,
+            "messages": messages,
+            "total": total,
+            "limit": limit,
+            "skip": skip
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting campaign messages: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get campaign messages: {str(e)}")
+
+@api_router.get("/outreach/messages/{message_id}")
+async def get_message(message_id: str):
+    """Get message details"""
+    try:
+        message = await db.messages.find_one({"id": message_id})
+        if not message:
+            raise HTTPException(status_code=404, detail="Message not found")
+        
+        return {
+            "success": True,
+            "message": message
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting message: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get message: {str(e)}")
+
+# Processing endpoints
+@api_router.post("/outreach/process-scheduled-messages")
+async def process_scheduled_messages():
+    """Process scheduled outreach messages"""
+    try:
+        await outreach_manager.process_scheduled_messages()
+        
+        return {
+            "success": True,
+            "message": "Scheduled messages processed successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing scheduled messages: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process scheduled messages: {str(e)}")
+
+@api_router.post("/outreach/process-follow-ups")
+async def process_follow_ups():
+    """Process follow-up messages for campaigns"""
+    try:
+        await outreach_manager.process_follow_ups()
+        
+        return {
+            "success": True,
+            "message": "Follow-ups processed successfully"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing follow-ups: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to process follow-ups: {str(e)}")
+
+# Statistics and analytics
+@api_router.get("/outreach/stats")
+async def get_outreach_stats():
+    """Get comprehensive outreach statistics"""
+    try:
+        # Get recruiter statistics
+        async with RecruiterResearchService(client) as research_service:
+            recruiter_stats = await research_service.get_recruiter_statistics()
+        
+        # Get campaign statistics
+        total_campaigns = await db.campaigns.count_documents({})
+        active_campaigns = await db.campaigns.count_documents({"status": CampaignStatus.ACTIVE.value})
+        
+        # Get message statistics
+        total_messages = await db.messages.count_documents({})
+        sent_messages = await db.messages.count_documents({"status": OutreachStatus.SENT.value})
+        replied_messages = await db.messages.count_documents({"replied_at": {"$ne": None}})
+        
+        # Calculate rates
+        response_rate = (replied_messages / sent_messages * 100) if sent_messages > 0 else 0
+        
+        return {
+            "success": True,
+            "statistics": {
+                "recruiters": recruiter_stats,
+                "campaigns": {
+                    "total_campaigns": total_campaigns,
+                    "active_campaigns": active_campaigns
+                },
+                "messages": {
+                    "total_messages": total_messages,
+                    "sent_messages": sent_messages,
+                    "replied_messages": replied_messages,
+                    "response_rate": round(response_rate, 2)
+                }
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting outreach stats: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get outreach stats: {str(e)}")
+
+@api_router.post("/outreach/test")
+async def test_outreach_system():
+    """Test the outreach system with sample data"""
+    try:
+        # Create test candidate
+        test_candidate = {
+            "id": "test_candidate_outreach",
+            "full_name": "Jane Smith",
+            "email": "jane.smith@example.com",
+            "phone": "+1-555-0198",
+            "location": "New York, NY",
+            "target_roles": ["Software Engineer", "Senior Developer"],
+            "target_companies": ["TechCorp", "InnovateCo"],
+            "skills": ["Python", "React", "AWS", "Machine Learning"],
+            "years_experience": 5,
+            "created_at": datetime.utcnow()
+        }
+        
+        # Upsert test candidate
+        await db.candidates.update_one(
+            {"id": test_candidate["id"]},
+            {"$set": test_candidate},
+            upsert=True
+        )
+        
+        # Create test recruiter
+        test_recruiter = {
+            "id": "test_recruiter_001",
+            "name": "Sarah Johnson",
+            "email": "sarah.johnson@techcorp.com",
+            "linkedin_url": "https://linkedin.com/in/sarahjohnson",
+            "company": "TechCorp",
+            "title": "Senior Technical Recruiter",
+            "location": "San Francisco, CA",
+            "recruiter_type": RecruiterType.INTERNAL.value,
+            "specializations": ["Technology"],
+            "seniority_levels": ["Mid", "Senior"],
+            "response_rate": 0.65,
+            "is_active": True,
+            "created_at": datetime.utcnow()
+        }
+        
+        # Upsert test recruiter
+        await db.recruiters.update_one(
+            {"id": test_recruiter["id"]},
+            {"$set": test_recruiter},
+            upsert=True
+        )
+        
+        # Create test campaign
+        campaign_data = {
+            "name": "Test Outreach Campaign",
+            "description": "Testing the outreach system",
+            "target_roles": ["Software Engineer"],
+            "target_companies": ["TechCorp"],
+            "channels": [OutreachChannel.EMAIL.value],
+            "tone": OutreachTone.WARM.value
+        }
+        
+        campaign_id = await outreach_manager.create_campaign(
+            candidate_id=test_candidate["id"],
+            campaign_data=campaign_data
+        )
+        
+        return {
+            "success": True,
+            "message": "Outreach system test completed successfully",
+            "test_data": {
+                "candidate": test_candidate,
+                "recruiter": test_recruiter,
+                "campaign_id": campaign_id
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error testing outreach system: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Outreach system test failed: {str(e)}")
+
+# ================================================================================
+# END PHASE 7: RECRUITER OUTREACH ENGINE ENDPOINTS
+# ================================================================================
