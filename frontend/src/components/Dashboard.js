@@ -275,7 +275,7 @@ const Dashboard = () => {
             to="/application-submission"
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            View Details →
+            View Details &rarr;
           </Link>
         </div>
         
