@@ -59,6 +59,13 @@ const Navigation = () => {
       badge: "PHASE 5"
     },
     {
+      title: "Application Submission",
+      icon: Play,
+      path: "/application-submission",
+      description: "Autonomous Application Engine",
+      badge: "PHASE 6"
+    },
+    {
       title: "Jobs List",
       icon: BarChart3,
       path: "/jobs",
