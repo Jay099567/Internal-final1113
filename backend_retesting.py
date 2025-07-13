@@ -234,11 +234,7 @@ Python, JavaScript, React, Django, FastAPI, AWS, Docker, Kubernetes, PostgreSQL,
             """
             
             response = requests.post(
-                f"{API_BASE}/ai/test/job-match",
-                json={
-                    "candidate_id": self.test_candidate_id,
-                    "job_description": sample_job_description
-                },
+                f"{API_BASE}/ai/test/job-match?candidate_id={self.test_candidate_id}&job_description={requests.utils.quote(sample_job_description)}",
                 timeout=60
             )
             
