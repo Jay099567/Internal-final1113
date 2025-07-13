@@ -477,3 +477,274 @@ class JobSearchRequest(BaseModel):
     location: Optional[str] = None
     max_results: int = 50
     date_range: Optional[str] = "7d"  # 1d, 3d, 7d, 14d, 30d
+
+
+# Phase 7: Recruiter Outreach Engine Models
+class OutreachChannel(str, Enum):
+    LINKEDIN = "linkedin"
+    EMAIL = "email"
+    TWITTER = "twitter"
+    PHONE = "phone"
+
+
+class OutreachStatus(str, Enum):
+    PENDING = "pending"
+    SENT = "sent"
+    DELIVERED = "delivered"
+    OPENED = "opened"
+    CLICKED = "clicked"
+    REPLIED = "replied"
+    BOUNCED = "bounced"
+    FAILED = "failed"
+
+
+class CampaignStatus(str, Enum):
+    DRAFT = "draft"
+    ACTIVE = "active"
+    PAUSED = "paused"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+
+class RecruiterType(str, Enum):
+    INTERNAL = "internal"
+    EXTERNAL = "external"
+    AGENCY = "agency"
+    HEADHUNTER = "headhunter"
+
+
+class Recruiter(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    email: Optional[EmailStr] = None
+    linkedin_url: Optional[str] = None
+    linkedin_id: Optional[str] = None
+    twitter_handle: Optional[str] = None
+    phone: Optional[str] = None
+    company: Optional[str] = None
+    company_domain: Optional[str] = None
+    title: Optional[str] = None
+    location: Optional[str] = None
+    industry: Optional[str] = None
+    recruiter_type: RecruiterType = RecruiterType.INTERNAL
+    specializations: List[str] = []  # Tech, Marketing, Sales, etc.
+    seniority_levels: List[str] = []  # Junior, Mid, Senior, Executive
+    response_rate: Optional[float] = None  # Historical response rate
+    avg_response_time: Optional[int] = None  # In hours
+    last_contacted: Optional[datetime] = None
+    total_contacts: int = 0
+    successful_contacts: int = 0
+    profile_data: Dict[str, Any] = {}  # Additional scraped data
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    is_active: bool = True
+
+
+class OutreachCampaign(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    candidate_id: str
+    name: str
+    description: Optional[str] = None
+    target_roles: List[str] = []
+    target_companies: List[str] = []
+    target_locations: List[str] = []
+    channels: List[OutreachChannel] = []
+    status: CampaignStatus = CampaignStatus.DRAFT
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    daily_limit: int = 10  # Max outreach attempts per day
+    delay_between_messages: int = 300  # Seconds between messages
+    follow_up_delay: int = 86400  # Seconds between follow-ups (24 hours)
+    max_follow_ups: int = 3
+    personalization_level: str = "medium"  # low, medium, high
+    tone: OutreachTone = OutreachTone.WARM
+    auto_follow_up: bool = True
+    track_opens: bool = True
+    track_clicks: bool = True
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class OutreachMessage(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    campaign_id: str
+    recruiter_id: str
+    candidate_id: str
+    channel: OutreachChannel
+    subject: Optional[str] = None
+    content: str
+    personalization_data: Dict[str, Any] = {}  # Data used for personalization
+    tone: OutreachTone
+    is_follow_up: bool = False
+    follow_up_sequence: int = 0  # 0 = initial, 1 = first follow-up, etc.
+    parent_message_id: Optional[str] = None  # For follow-ups
+    scheduled_for: Optional[datetime] = None
+    sent_at: Optional[datetime] = None
+    delivered_at: Optional[datetime] = None
+    opened_at: Optional[datetime] = None
+    clicked_at: Optional[datetime] = None
+    replied_at: Optional[datetime] = None
+    status: OutreachStatus = OutreachStatus.PENDING
+    error_message: Optional[str] = None
+    linkedin_message_id: Optional[str] = None
+    email_message_id: Optional[str] = None
+    metrics: Dict[str, Any] = {}  # Open rates, click rates, etc.
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class OutreachTemplate(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    description: Optional[str] = None
+    channel: OutreachChannel
+    tone: OutreachTone
+    subject_template: Optional[str] = None  # For email
+    message_template: str
+    personalization_fields: List[str] = []  # Fields like {name}, {company}, etc.
+    follow_up_templates: List[str] = []  # Templates for follow-up messages
+    success_rate: Optional[float] = None
+    usage_count: int = 0
+    created_by: str  # User who created the template
+    is_public: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class OutreachResponse(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    message_id: str
+    recruiter_id: str
+    candidate_id: str
+    campaign_id: str
+    channel: OutreachChannel
+    response_type: str  # "reply", "connection_accepted", "profile_view", etc.
+    content: Optional[str] = None
+    sentiment: Optional[str] = None  # positive, negative, neutral
+    intent: Optional[str] = None  # interested, not_interested, more_info, etc.
+    response_time: Optional[int] = None  # Time to respond in seconds
+    linkedin_response_id: Optional[str] = None
+    email_response_id: Optional[str] = None
+    auto_processed: bool = False
+    requires_follow_up: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class RecruiterResearch(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    recruiter_id: str
+    research_type: str  # "profile_scrape", "company_research", "contact_discovery"
+    data_source: str  # "linkedin", "company_website", "glassdoor", etc.
+    research_data: Dict[str, Any] = {}
+    confidence_score: Optional[float] = None
+    last_updated: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class OutreachAnalytics(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    campaign_id: str
+    candidate_id: str
+    date: datetime
+    messages_sent: int = 0
+    messages_delivered: int = 0
+    messages_opened: int = 0
+    messages_clicked: int = 0
+    messages_replied: int = 0
+    messages_bounced: int = 0
+    connections_made: int = 0
+    response_rate: float = 0.0
+    open_rate: float = 0.0
+    click_rate: float = 0.0
+    bounce_rate: float = 0.0
+    avg_response_time: Optional[int] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class LinkedInOAuth(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    candidate_id: str
+    access_token: str
+    refresh_token: Optional[str] = None
+    token_expiry: datetime
+    scopes: List[str] = []
+    linkedin_user_id: str
+    linkedin_profile_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    is_active: bool = True
+
+
+# Request/Response Models for Outreach
+class CampaignCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    target_roles: List[str] = []
+    target_companies: List[str] = []
+    target_locations: List[str] = []
+    channels: List[OutreachChannel] = []
+    daily_limit: int = 10
+    delay_between_messages: int = 300
+    follow_up_delay: int = 86400
+    max_follow_ups: int = 3
+    personalization_level: str = "medium"
+    tone: OutreachTone = OutreachTone.WARM
+    auto_follow_up: bool = True
+
+
+class CampaignUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    target_roles: Optional[List[str]] = None
+    target_companies: Optional[List[str]] = None
+    target_locations: Optional[List[str]] = None
+    channels: Optional[List[OutreachChannel]] = None
+    status: Optional[CampaignStatus] = None
+    daily_limit: Optional[int] = None
+    delay_between_messages: Optional[int] = None
+    follow_up_delay: Optional[int] = None
+    max_follow_ups: Optional[int] = None
+    personalization_level: Optional[str] = None
+    tone: Optional[OutreachTone] = None
+    auto_follow_up: Optional[bool] = None
+
+
+class RecruiterCreate(BaseModel):
+    name: str
+    email: Optional[EmailStr] = None
+    linkedin_url: Optional[str] = None
+    linkedin_id: Optional[str] = None
+    twitter_handle: Optional[str] = None
+    phone: Optional[str] = None
+    company: Optional[str] = None
+    company_domain: Optional[str] = None
+    title: Optional[str] = None
+    location: Optional[str] = None
+    industry: Optional[str] = None
+    recruiter_type: RecruiterType = RecruiterType.INTERNAL
+    specializations: List[str] = []
+    seniority_levels: List[str] = []
+
+
+class MessageCreate(BaseModel):
+    campaign_id: str
+    recruiter_id: str
+    channel: OutreachChannel
+    subject: Optional[str] = None
+    content: str
+    personalization_data: Dict[str, Any] = {}
+    tone: OutreachTone
+    scheduled_for: Optional[datetime] = None
+
+
+class TemplateCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    channel: OutreachChannel
+    tone: OutreachTone
+    subject_template: Optional[str] = None
+    message_template: str
+    personalization_fields: List[str] = []
+    follow_up_templates: List[str] = []
+    is_public: bool = False
