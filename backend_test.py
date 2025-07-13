@@ -1458,14 +1458,17 @@ class TestJobMatchingSystem(unittest.TestCase):
             self.fail(f"Job matching service structure test failed: {e}")
 
 if __name__ == "__main__":
-    print("Running Elite JobHunter X - Phase 5 Advanced Cover Letter Generation System Tests...")
+    print("Running Elite JobHunter X - Phase 6 Application Submission System Tests...")
     print(f"Backend URL: {BACKEND_URL}")
     print("=" * 80)
     
     # Create test suite
     suite = unittest.TestSuite()
     
-    # Add cover letter tests (Phase 5 - Primary focus)
+    # Add application submission tests (Phase 6 - Primary focus)
+    suite.addTest(unittest.makeSuite(TestApplicationSubmissionSystem))
+    
+    # Add cover letter tests (Phase 5 - Secondary)
     suite.addTest(unittest.makeSuite(TestAdvancedCoverLetterSystem))
     
     # Add resume tailoring tests (Phase 4 - Secondary)
