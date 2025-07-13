@@ -51,15 +51,15 @@ class OpenRouterService:
                 logger.error(f"Failed to initialize OpenAI client: {e2}")
                 raise e2
         
-        # Model configurations for different tasks
+        # Model configurations for different tasks - Using best FREE models
         self.models = {
-            "job_matching": "anthropic/claude-3-sonnet",
-            "resume_tailoring": "anthropic/claude-3-sonnet", 
-            "cover_letter": "anthropic/claude-3-sonnet",
-            "outreach": "anthropic/claude-3-sonnet",
-            "content_extraction": "anthropic/claude-3-haiku",
-            "classification": "anthropic/claude-3-haiku",
-            "embeddings": "text-embedding-3-small"
+            "job_matching": "meta-llama/llama-3.2-3b-instruct:free",
+            "resume_tailoring": "meta-llama/llama-3.2-3b-instruct:free", 
+            "cover_letter": "meta-llama/llama-3.2-3b-instruct:free",
+            "outreach": "meta-llama/llama-3.2-3b-instruct:free",
+            "content_extraction": "meta-llama/llama-3.2-1b-instruct:free",
+            "classification": "meta-llama/llama-3.2-1b-instruct:free",
+            "embeddings": "text-embedding-3-small"  # OpenAI embeddings via OpenRouter
         }
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
