@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Elite JobHunter X - Backend API Testing
-Comprehensive tests for MASS SCALE AUTONOMOUS SYSTEM components
+Focus on current issues: OpenRouter API, APScheduler, Vector Embeddings
 """
 
 import unittest
@@ -11,10 +11,14 @@ import json
 import requests
 import asyncio
 from datetime import datetime
+import time
 
 # Get backend URL from environment
 BACKEND_URL = os.getenv('REACT_APP_BACKEND_URL', 'https://c0608967-bbec-4527-b994-5ff4fea0c6fd.preview.emergentagent.com')
 API_BASE = f"{BACKEND_URL}/api"
+
+print(f"🔍 Testing Backend API at: {API_BASE}")
+print("=" * 80)
 
 class TestMasterAutomationOrchestrator(unittest.TestCase):
     """Test suite for Master Automation Orchestrator - MASS SCALE AUTONOMOUS SYSTEM"""
