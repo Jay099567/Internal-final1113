@@ -2037,18 +2037,15 @@ asyncio.create_task(application_submission_manager.process_submission_queue())
 # PHASE 7: RECRUITER OUTREACH ENGINE API ENDPOINTS
 # ================================================================================
 
-# Temporarily disabled due to import issues
-# from services.outreach_manager import OutreachCampaignManager
-# Temporarily disabled due to import issues
-# from services.recruiter_research import RecruiterResearchService
-# Temporarily disabled due to import issues
-# from services.linkedin_automation import LinkedInAutomation
+# MASS SCALE AUTONOMOUS SYSTEM SERVICES
+from services.automation_orchestrator import MasterAutomationOrchestrator
+from services.linkedin_automation import LinkedInAutomationService
+from services.feedback_analyzer import FeedbackAnalyzer
 
-# Initialize outreach services
-# Temporarily disabled due to import issues
-# outreach_manager = OutreachCampaignManager(client)
-# Temporarily disabled due to import issues
-# recruiter_research_service = RecruiterResearchService(client)
+# Initialize MASS SCALE services
+master_orchestrator = MasterAutomationOrchestrator(db)
+linkedin_automation = LinkedInAutomationService(db)
+feedback_analyzer = FeedbackAnalyzer(db)
 
 # Request models for outreach
 class RecruiterCreateRequest(BaseModel):
