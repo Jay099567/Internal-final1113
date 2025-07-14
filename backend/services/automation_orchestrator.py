@@ -50,14 +50,23 @@ class CandidateStatus(Enum):
 
 @dataclass
 class AutomationStats:
-    total_candidates: int
-    active_candidates: int
-    jobs_scraped_today: int
-    matches_found_today: int
-    applications_sent_today: int
-    outreach_sent_today: int
-    success_rate: float
-    errors_today: int
+    total_candidates: int = 0
+    active_candidates: int = 0
+    jobs_scraped_today: int = 0
+    matches_found_today: int = 0
+    applications_sent_today: int = 0
+    outreach_sent_today: int = 0
+    success_rate: float = 0.0
+    errors_today: int = 0
+    # Additional fields expected by server.py
+    candidates_processed: int = 0
+    jobs_scraped: int = 0
+    matches_found: int = 0
+    resumes_tailored: int = 0
+    cover_letters_generated: int = 0
+    applications_submitted: int = 0
+    outreach_sent: int = 0
+    total_runtime_hours: float = 0.0
 
 class MasterAutomationOrchestrator:
     """
