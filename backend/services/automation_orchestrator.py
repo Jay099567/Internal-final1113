@@ -28,7 +28,7 @@ from .job_scraper import JobScrapingManager
 from .job_matching import JobMatchingService
 from .resume_tailoring import ResumeTailoringService
 from .cover_letter import CoverLetterGenerator
-from .application_submission import ApplicationSubmissionManager
+from .application_submission import ApplicationSubmissionManager, ApplicationSubmissionConfig
 from .linkedin_automation import LinkedInAutomationService
 from .feedback_analyzer import FeedbackAnalyzer
 from .openrouter import get_openrouter_service
