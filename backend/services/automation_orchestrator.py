@@ -27,7 +27,7 @@ from pymongo import DESCENDING
 from .job_scraper import JobScrapingManager
 from .job_matching import JobMatchingService
 from .resume_tailoring import ResumeTailoringService
-from .cover_letter import CoverLetterGenerationService
+from .cover_letter import CoverLetterGenerator
 from .application_submission import ApplicationSubmissionManager
 from .linkedin_automation import LinkedInAutomationService
 from .feedback_analyzer import FeedbackAnalyzer
@@ -75,7 +75,7 @@ class MasterAutomationOrchestrator:
         self.job_scraper = JobScrapingManager()
         self.job_matcher = JobMatchingService(db)
         self.resume_tailor = ResumeTailoringService(db)
-        self.cover_letter_service = CoverLetterGenerationService(db)
+        self.cover_letter_service = CoverLetterGenerator(db)
         self.application_manager = ApplicationSubmissionManager(db)
         self.linkedin_automation = LinkedInAutomationService(db)
         self.feedback_analyzer = FeedbackAnalyzer(db)
