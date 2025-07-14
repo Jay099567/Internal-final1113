@@ -1324,6 +1324,337 @@ class TestApplicationSubmissionSystem(unittest.TestCase):
             self.fail(f"Integration with other services test failed: {e}")
 
 
+class TestMassScaleEndpoints(unittest.TestCase):
+    """Test suite for MASS SCALE AUTONOMOUS SYSTEM API endpoints"""
+    
+    @classmethod
+    def setUpClass(cls):
+        """Set up test data"""
+        cls.test_candidate_id = None
+        cls.test_job_id = None
+        
+        # Create test candidate for MASS SCALE testing
+        cls._create_test_data()
+    
+    @classmethod
+    def _create_test_data(cls):
+        """Create test candidate for MASS SCALE testing"""
+        try:
+            # Create test candidate
+            candidate_data = {
+                "full_name": "Sarah Wilson",
+                "email": "sarah.wilson@example.com",
+                "phone": "+1-555-0177",
+                "location": "San Francisco, CA",
+                "linkedin_url": "https://linkedin.com/in/sarahwilson",
+                "target_roles": ["Senior Software Engineer", "Tech Lead"],
+                "target_locations": ["San Francisco", "Remote"],
+                "salary_min": 150000,
+                "salary_max": 220000,
+                "years_experience": 8,
+                "skills": ["Python", "React", "AWS", "Kubernetes", "Machine Learning"]
+            }
+            
+            response = requests.post(f"{API_BASE}/candidates", json=candidate_data, timeout=30)
+            if response.status_code == 200:
+                cls.test_candidate_id = response.json()["id"]
+                print(f"✅ Created test candidate for MASS SCALE: {cls.test_candidate_id}")
+            else:
+                print(f"❌ Failed to create test candidate: {response.status_code}")
+                
+        except Exception as e:
+            print(f"❌ Error creating test data: {e}")
+    
+    def test_01_automation_start_endpoint(self):
+        """Test POST /api/automation/start - Start autonomous system"""
+        try:
+            response = requests.post(f"{API_BASE}/automation/start", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("message", data)
+            self.assertIn("status", data)
+            self.assertEqual(data["status"], "initializing")
+            
+            print("✅ Automation start endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Automation start endpoint test failed: {e}")
+    
+    def test_02_automation_status_endpoint(self):
+        """Test GET /api/automation/status - Get system status"""
+        try:
+            response = requests.get(f"{API_BASE}/automation/status", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("status", data)
+            
+            # Check status structure
+            status = data["status"]
+            self.assertIn("is_running", status)
+            self.assertIn("current_phase", status)
+            self.assertIn("active_candidates", status)
+            self.assertIn("last_cycle_time", status)
+            
+            print("✅ Automation status endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Automation status endpoint test failed: {e}")
+    
+    def test_03_automation_stats_endpoint(self):
+        """Test GET /api/automation/stats - Get automation statistics"""
+        try:
+            response = requests.get(f"{API_BASE}/automation/stats", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("stats", data)
+            
+            # Check stats structure
+            stats = data["stats"]
+            required_stats = [
+                "candidates_processed", "jobs_scraped", "matches_found",
+                "resumes_tailored", "cover_letters_generated", "applications_submitted",
+                "outreach_sent", "total_runtime_hours", "success_rate", "active_candidates"
+            ]
+            
+            for stat in required_stats:
+                self.assertIn(stat, stats)
+            
+            print("✅ Automation stats endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Automation stats endpoint test failed: {e}")
+    
+    def test_04_linkedin_start_outreach_endpoint(self):
+        """Test POST /api/linkedin/start-outreach - Start LinkedIn outreach"""
+        try:
+            if not self.test_candidate_id:
+                self.skipTest("No test candidate available")
+            
+            response = requests.post(
+                f"{API_BASE}/linkedin/start-outreach",
+                params={"candidate_id": self.test_candidate_id},
+                timeout=30
+            )
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("message", data)
+            self.assertIn("candidate_id", data)
+            self.assertEqual(data["candidate_id"], self.test_candidate_id)
+            
+            print("✅ LinkedIn start outreach endpoint working")
+            
+        except Exception as e:
+            self.fail(f"LinkedIn start outreach endpoint test failed: {e}")
+    
+    def test_05_linkedin_outreach_status_endpoint(self):
+        """Test GET /api/linkedin/outreach-status/{candidate_id} - Get outreach status"""
+        try:
+            if not self.test_candidate_id:
+                self.skipTest("No test candidate available")
+            
+            response = requests.get(
+                f"{API_BASE}/linkedin/outreach-status/{self.test_candidate_id}",
+                timeout=30
+            )
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("status", data)
+            
+            # Check status structure
+            status = data["status"]
+            self.assertIn("candidate_id", status)
+            self.assertIn("campaign_status", status)
+            self.assertIn("messages_sent", status)
+            self.assertIn("connections_made", status)
+            
+            print("✅ LinkedIn outreach status endpoint working")
+            
+        except Exception as e:
+            self.fail(f"LinkedIn outreach status endpoint test failed: {e}")
+    
+    def test_06_linkedin_campaigns_endpoint(self):
+        """Test GET /api/linkedin/campaigns - Get outreach campaigns"""
+        try:
+            response = requests.get(f"{API_BASE}/linkedin/campaigns", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("campaigns", data)
+            
+            # Campaigns should be a list
+            campaigns = data["campaigns"]
+            self.assertIsInstance(campaigns, list)
+            
+            print("✅ LinkedIn campaigns endpoint working")
+            
+        except Exception as e:
+            self.fail(f"LinkedIn campaigns endpoint test failed: {e}")
+    
+    def test_07_feedback_analyze_performance_endpoint(self):
+        """Test POST /api/feedback/analyze-performance - Analyze performance"""
+        try:
+            response = requests.post(f"{API_BASE}/feedback/analyze-performance", timeout=60)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("performance_data", data)
+            self.assertIn("recommendations", data)
+            
+            # Check performance data structure
+            performance_data = data["performance_data"]
+            self.assertIn("application_success_rate", performance_data)
+            self.assertIn("response_rate", performance_data)
+            self.assertIn("keyword_performance", performance_data)
+            
+            # Check recommendations structure
+            recommendations = data["recommendations"]
+            self.assertIsInstance(recommendations, list)
+            
+            print("✅ Feedback analyze performance endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Feedback analyze performance endpoint test failed: {e}")
+    
+    def test_08_feedback_apply_optimizations_endpoint(self):
+        """Test POST /api/feedback/apply-optimizations - Apply optimizations"""
+        try:
+            response = requests.post(f"{API_BASE}/feedback/apply-optimizations", timeout=60)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("optimizations_applied", data)
+            
+            # Check optimizations applied structure
+            optimizations = data["optimizations_applied"]
+            self.assertIn("count", optimizations)
+            self.assertIn("strategies", optimizations)
+            
+            print("✅ Feedback apply optimizations endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Feedback apply optimizations endpoint test failed: {e}")
+    
+    def test_09_feedback_success_patterns_endpoint(self):
+        """Test GET /api/feedback/success-patterns - Get success patterns"""
+        try:
+            response = requests.get(f"{API_BASE}/feedback/success-patterns", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("patterns", data)
+            
+            # Check patterns structure
+            patterns = data["patterns"]
+            self.assertIn("successful_keywords", patterns)
+            self.assertIn("optimal_application_times", patterns)
+            self.assertIn("best_resume_strategies", patterns)
+            self.assertIn("effective_outreach_approaches", patterns)
+            
+            print("✅ Feedback success patterns endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Feedback success patterns endpoint test failed: {e}")
+    
+    def test_10_analytics_mass_scale_dashboard_endpoint(self):
+        """Test GET /api/analytics/mass-scale-dashboard - Get comprehensive dashboard"""
+        try:
+            response = requests.get(f"{API_BASE}/analytics/mass-scale-dashboard", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("dashboard", data)
+            
+            # Check dashboard structure
+            dashboard = data["dashboard"]
+            required_sections = ["candidates", "jobs", "applications", "matching", "outreach", "automation"]
+            
+            for section in required_sections:
+                self.assertIn(section, dashboard)
+            
+            # Check candidates section
+            candidates = dashboard["candidates"]
+            self.assertIn("total", candidates)
+            self.assertIn("active", candidates)
+            self.assertIn("inactive", candidates)
+            
+            # Check automation section
+            automation = dashboard["automation"]
+            self.assertIn("status", automation)
+            self.assertIn("uptime", automation)
+            self.assertIn("last_cycle", automation)
+            
+            print("✅ Analytics mass scale dashboard endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Analytics mass scale dashboard endpoint test failed: {e}")
+    
+    def test_11_analytics_candidate_performance_endpoint(self):
+        """Test GET /api/analytics/candidate-performance/{candidate_id} - Get candidate performance"""
+        try:
+            if not self.test_candidate_id:
+                self.skipTest("No test candidate available")
+            
+            response = requests.get(
+                f"{API_BASE}/analytics/candidate-performance/{self.test_candidate_id}",
+                timeout=30
+            )
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("candidate_id", data)
+            self.assertIn("performance", data)
+            self.assertEqual(data["candidate_id"], self.test_candidate_id)
+            
+            # Check performance structure
+            performance = data["performance"]
+            required_sections = ["applications", "matching", "outreach"]
+            
+            for section in required_sections:
+                self.assertIn(section, performance)
+            
+            # Check applications section
+            applications = performance["applications"]
+            self.assertIn("total", applications)
+            self.assertIn("successful", applications)
+            self.assertIn("success_rate", applications)
+            
+            print("✅ Analytics candidate performance endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Analytics candidate performance endpoint test failed: {e}")
+    
+    def test_12_automation_stop_endpoint(self):
+        """Test POST /api/automation/stop - Stop autonomous system"""
+        try:
+            response = requests.post(f"{API_BASE}/automation/stop", timeout=30)
+            self.assertEqual(response.status_code, 200)
+            
+            data = response.json()
+            self.assertTrue(data["success"])
+            self.assertIn("message", data)
+            
+            print("✅ Automation stop endpoint working")
+            
+        except Exception as e:
+            self.fail(f"Automation stop endpoint test failed: {e}")
+
+
 class TestAdvancedCoverLetterSystem(unittest.TestCase):
     """Test suite for Phase 5 Advanced Cover Letter Generation system"""
     
