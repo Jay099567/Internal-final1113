@@ -206,6 +206,9 @@ backend:
       - working: false
         agent: "testing"
         comment: "ISSUE IDENTIFIED: ❌ AI Testing Endpoints experiencing OpenRouter API authentication failures (500 errors). Endpoint structure is correct but OpenRouter service calls are failing due to API key authentication issues. Core functionality blocked by OpenRouter API key problems."
+      - working: false
+        agent: "testing"
+        comment: "CONFIRMED ISSUE: ❌ OpenRouter API authentication failures detected. AI job matching returns 'RetryError[AuthenticationError]' and cover letter generation has JSON serialization issues with ObjectId. API endpoints are properly structured but OpenRouter service integration is failing due to authentication problems with the provided API key."
 
   - task: "Dashboard Analytics API"
     implemented: true
