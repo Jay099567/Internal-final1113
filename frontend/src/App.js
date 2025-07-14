@@ -27,6 +27,8 @@ function App() {
           <main className="flex-1 ml-64 p-8">
             <Routes>
               <Route path="/" element={<Dashboard />} />
+              <Route path="/mass-scale" element={<MassScaleDashboard />} />
+              <Route path="/automation" element={<AutomationOrchestrator />} />
               <Route path="/candidates/new" element={<CandidateOnboarding />} />
               <Route path="/candidates/:id" element={<CandidateProfile />} />
               <Route path="/scraping" element={<JobScraping />} />
@@ -35,6 +37,8 @@ function App() {
               <Route path="/resume-tailoring" element={<ResumeTailoring />} />
               <Route path="/cover-letters" element={<CoverLetterManagement />} />
               <Route path="/application-submission" element={<ApplicationSubmission />} />
+              <Route path="/linkedin-automation" element={<LinkedInAutomation />} />
+              <Route path="/feedback-analytics" element={<FeedbackAnalytics />} />
               <Route path="/test-ai" element={<TestAI />} />
             </Routes>
           </main>
