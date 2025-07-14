@@ -169,9 +169,14 @@ const Navigation = () => {
         {/* Feature Sections */}
         <div className="mt-8">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 mb-3">
-            Features
+            MASS SCALE SYSTEM
           </div>
           <div className="space-y-2">
+            <div className="flex items-center space-x-3 px-4 py-2 text-slate-400 text-sm">
+              <Zap className="w-4 h-4" />
+              <span>Automation</span>
+              <span className="ml-auto bg-green-500 w-2 h-2 rounded-full"></span>
+            </div>
             <div className="flex items-center space-x-3 px-4 py-2 text-slate-400 text-sm">
               <Search className="w-4 h-4" />
               <span>Job Scraping</span>
@@ -189,12 +194,17 @@ const Navigation = () => {
             </div>
             <div className="flex items-center space-x-3 px-4 py-2 text-slate-400 text-sm">
               <Send className="w-4 h-4" />
-              <span>Auto Apply</span>
-              <span className="ml-auto bg-yellow-500 w-2 h-2 rounded-full"></span>
+              <span>Applications</span>
+              <span className="ml-auto bg-green-500 w-2 h-2 rounded-full"></span>
             </div>
             <div className="flex items-center space-x-3 px-4 py-2 text-slate-400 text-sm">
-              <BarChart3 className="w-4 h-4" />
-              <span>Analytics</span>
+              <LinkedinIcon className="w-4 h-4" />
+              <span>LinkedIn Outreach</span>
+              <span className="ml-auto bg-green-500 w-2 h-2 rounded-full"></span>
+            </div>
+            <div className="flex items-center space-x-3 px-4 py-2 text-slate-400 text-sm">
+              <TrendingUp className="w-4 h-4" />
+              <span>AI Learning</span>
               <span className="ml-auto bg-green-500 w-2 h-2 rounded-full"></span>
             </div>
           </div>
