@@ -77,7 +77,7 @@ class MasterAutomationOrchestrator:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
         self.is_running = False
-        self.stats = AutomationStats(0, 0, 0, 0, 0, 0, 0.0, 0)
+        self.stats = AutomationStats()
         self.logger = self._setup_logging()
         
         # Initialize all service components
