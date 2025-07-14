@@ -13,7 +13,8 @@ import {
   BarChart3,
   Search,
   Target,
-  Send
+  Send,
+  Brain
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
