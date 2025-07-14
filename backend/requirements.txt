@@ -13,7 +13,7 @@ python-docx==0.8.11
 docx2txt==0.8
 PyMuPDF==1.21.1
 scikit-learn==1.2.2
-sentence-transformers==2.2.2
+sentence-transformers==2.7.0
 playwright==1.32.1
 playwright-stealth==1.0.6
 fake-useragent==1.1.3
