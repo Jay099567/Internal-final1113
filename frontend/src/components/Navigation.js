@@ -29,6 +29,20 @@ const Navigation = () => {
       description: "Overview & Analytics"
     },
     {
+      title: "Mass Scale Dashboard",
+      icon: BarChart3,
+      path: "/mass-scale",
+      description: "100+ Candidates Analytics",
+      badge: "NEW"
+    },
+    {
+      title: "Automation Control",
+      icon: Zap,
+      path: "/automation",
+      description: "Master Orchestrator",
+      badge: "AUTONOMOUS"
+    },
+    {
       title: "Add Candidate",
       icon: Plus,
       path: "/candidates/new",
@@ -46,32 +60,46 @@ const Navigation = () => {
       icon: Brain,
       path: "/matching",
       description: "AI Job Matching",
-      badge: "NEW"
+      badge: "AI"
     },
     {
       title: "Resume Tailoring",
       icon: Settings,
       path: "/resume-tailoring",
       description: "AI Resume Optimization",
-      badge: "PHASE 4"
+      badge: "GENETIC"
     },
     {
       title: "Cover Letters",
       icon: FileText,
       path: "/cover-letters",
       description: "AI Cover Letter Generation",
-      badge: "PHASE 5"
+      badge: "MULTI-TONE"
     },
     {
       title: "Application Submission",
       icon: Play,
       path: "/application-submission",
       description: "Autonomous Application Engine",
-      badge: "PHASE 6"
+      badge: "STEALTH"
+    },
+    {
+      title: "LinkedIn Outreach",
+      icon: LinkedinIcon,
+      path: "/linkedin-automation",
+      description: "Automated LinkedIn Networking",
+      badge: "PHASE 7"
+    },
+    {
+      title: "AI Analytics",
+      icon: TrendingUp,
+      path: "/feedback-analytics",
+      description: "Performance Learning Loop",
+      badge: "PHASE 8"
     },
     {
       title: "Jobs List",
-      icon: BarChart3,
+      icon: Target,
       path: "/jobs",
       description: "View Scraped Jobs"
     },
