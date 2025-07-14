@@ -2028,9 +2028,7 @@ async def test_application_submission():
         logger.error(f"Error testing application submission: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Application submission test failed: {str(e)}")
 
-# Start the submission queue processor
-import asyncio
-asyncio.create_task(application_submission_manager.process_submission_queue())
+# Application submission manager will be started in startup event
 
 
 # ================================================================================
