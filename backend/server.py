@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Depends, Query
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Depends, Query, BackgroundTasks
 from fastapi.responses import JSONResponse, RedirectResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
