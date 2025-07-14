@@ -151,6 +151,23 @@ class FeedbackAnalyzer:
             self.logger.error(f"❌ Performance analysis error: {e}")
             return None
     
+    # Public API methods for server endpoints
+    async def collect_performance_data(self):
+        """Public method to collect performance data"""
+        return await self._collect_performance_data()
+    
+    async def analyze_success_patterns(self):
+        """Public method to analyze success patterns"""
+        performance_data = await self._collect_performance_data()
+        return await self._analyze_success_patterns(performance_data)
+    
+    async def apply_optimizations(self):
+        """Public method to apply optimizations"""
+        performance_data = await self._collect_performance_data()
+        success_patterns = await self._analyze_success_patterns(performance_data)
+        recommendations = await self._generate_optimization_recommendations(success_patterns)
+        return await self._apply_automated_optimizations(recommendations)
+    
     async def _collect_performance_data(self) -> Dict[str, Any]:
         """
         Collect comprehensive performance data from all system components
