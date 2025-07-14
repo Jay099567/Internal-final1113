@@ -704,10 +704,11 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Phase 5 Cover Letter Generation - COMPLETED"
-    - "OpenRouter API key activation/billing verification"
-    - "End-to-end cover letter workflow testing"
-  stuck_tasks: []
+    - "OpenRouter API key activation/billing verification - CRITICAL"
+    - "JSON serialization issues with ObjectId in AI endpoints"
+    - "End-to-end system integration testing"
+  stuck_tasks:
+    - "AI Testing Endpoints - OpenRouter authentication failures"
   test_all: false
   test_priority: "high_first"
 
