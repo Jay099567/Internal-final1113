@@ -12,6 +12,10 @@ import JobMatching from "./components/JobMatching";
 import ResumeTailoring from "./components/ResumeTailoring";
 import CoverLetterManagement from "./components/CoverLetterManagement";
 import ApplicationSubmission from "./components/ApplicationSubmission";
+import AutomationOrchestrator from "./components/AutomationOrchestrator";
+import MassScaleDashboard from "./components/MassScaleDashboard";
+import LinkedInAutomation from "./components/LinkedInAutomation";
+import FeedbackAnalytics from "./components/FeedbackAnalytics";
 import Navigation from "./components/Navigation";
 
 function App() {
