@@ -73,10 +73,12 @@ class MasterAutomationOrchestrator:
         
         # Initialize all service components
         self.job_scraper = JobScrapingManager()
-        self.job_matcher = JobMatchingService(db)
+        self.job_matcher = JobMatchingService()
         self.resume_tailor = ResumeTailoringService(db)
         self.cover_letter_service = CoverLetterGenerator(db)
-        self.application_manager = ApplicationSubmissionManager(db)
+        # Create config for ApplicationSubmissionManager
+        app_config = ApplicationSubmissionConfig()
+        self.application_manager = ApplicationSubmissionManager(app_config)
         self.linkedin_automation = LinkedInAutomationService(db)
         self.feedback_analyzer = FeedbackAnalyzer(db)
         
