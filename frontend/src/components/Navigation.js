@@ -11,7 +11,11 @@ import {
   Send,
   BarChart3,
   FileText,
-  Play
+  Play,
+  Zap,
+  Target,
+  LinkedinIcon,
+  TrendingUp
 } from "lucide-react";
 
 const Navigation = () => {
