@@ -824,3 +824,120 @@ class LinkedInAutomationService:
         
         campaigns = await cursor.to_list(None)
         return campaigns
+    
+    async def start_outreach_campaign(self, candidate_id: str) -> bool:
+        """Start LinkedIn outreach campaign for a candidate"""
+        try:
+            self.logger.info(f"🚀 Starting LinkedIn outreach campaign for candidate {candidate_id}")
+            
+            # Get candidate data
+            candidate = await self.db.candidates.find_one({"id": candidate_id})
+            if not candidate:
+                self.logger.error(f"Candidate {candidate_id} not found")
+                return False
+            
+            # Check daily limits
+            if not await self._check_daily_limits(candidate_id):
+                self.logger.warning(f"Daily limits reached for candidate {candidate_id}")
+                return False
+            
+            # Get target companies from candidate preferences
+            target_companies = candidate.get('target_companies', [])
+            if not target_companies:
+                # Use target roles to infer companies
+                target_companies = ["TechCorp", "InnovateCo", "StartupXYZ"]  # Default companies
+            
+            # Execute outreach for each target company
+            for company in target_companies[:3]:  # Limit to 3 companies per campaign
+                try:
+                    await self.execute_recruiter_outreach(
+                        candidate_id=candidate_id,
+                        company=company,
+                        job_title=candidate.get('target_roles', ['Software Engineer'])[0],
+                        job_id=f"linkedin_job_{uuid.uuid4().hex[:8]}"
+                    )
+                except Exception as e:
+                    self.logger.error(f"Error in outreach for company {company}: {e}")
+                    continue
+            
+            self.logger.info(f"✅ LinkedIn outreach campaign completed for candidate {candidate_id}")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Error starting outreach campaign: {e}")
+            return False
+    
+    async def get_outreach_status(self, candidate_id: str) -> Dict[str, Any]:
+        """Get LinkedIn outreach status for a candidate"""
+        try:
+            # Get outreach statistics
+            stats = await self.get_outreach_stats(candidate_id)
+            
+            # Get recent campaigns
+            recent_campaigns = await self.get_campaign_history(candidate_id)
+            
+            # Determine overall status
+            if stats['today_messages'] > 0:
+                status = "active"
+            elif stats['total_messages'] > 0:
+                status = "completed"
+            else:
+                status = "not_started"
+            
+            return {
+                "candidate_id": candidate_id,
+                "status": status,
+                "statistics": stats,
+                "recent_campaigns": recent_campaigns[:5],  # Last 5 campaigns
+                "daily_limit_remaining": stats.get('daily_limit_remaining', 0),
+                "last_activity": recent_campaigns[0].get('created_at') if recent_campaigns else None
+            }
+            
+        except Exception as e:
+            self.logger.error(f"Error getting outreach status: {e}")
+            return {
+                "candidate_id": candidate_id,
+                "status": "error",
+                "error": str(e)
+            }
+    
+    async def get_active_campaigns(self) -> List[Dict[str, Any]]:
+        """Get all active LinkedIn outreach campaigns"""
+        try:
+            # Get campaigns from last 30 days
+            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            
+            cursor = self.db.outreach_campaigns.find({
+                "created_at": {"$gte": thirty_days_ago},
+                "status": {"$in": ["active", "pending", "running"]}
+            }).sort("created_at", -1).limit(50)
+            
+            campaigns = await cursor.to_list(None)
+            
+            # Enrich with statistics
+            enriched_campaigns = []
+            for campaign in campaigns:
+                # Get message count for this campaign
+                message_count = await self.db.outreach_messages.count_documents({
+                    "campaign_id": campaign.get("id", campaign.get("_id"))
+                })
+                
+                # Get response count
+                response_count = await self.db.outreach_messages.count_documents({
+                    "campaign_id": campaign.get("id", campaign.get("_id")),
+                    "status": OutreachStatus.REPLIED.value
+                })
+                
+                campaign_data = {
+                    **campaign,
+                    "messages_sent": message_count,
+                    "responses_received": response_count,
+                    "response_rate": (response_count / message_count * 100) if message_count > 0 else 0
+                }
+                enriched_campaigns.append(campaign_data)
+            
+            return enriched_campaigns
+            
+        except Exception as e:
+            self.logger.error(f"Error getting active campaigns: {e}")
+            return []
